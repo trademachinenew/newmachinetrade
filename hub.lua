@@ -72,7 +72,7 @@ local LocalPlayer = Players.LocalPlayer
 
 local ConfigFile = "BunnyHub_Config.json"
 local Config = {
-    StartMinimized = false -- Default setting
+    StartMinimized = false -- Visible by default for new users
 }
 
 local function SaveConfig()
@@ -110,7 +110,6 @@ local function LoadConfig()
     end)
 
     if Success and type(Data) == "table" then
-        -- Merge saved data into Config
         for k, v in pairs(Data) do
             Config[k] = v
         end
@@ -152,7 +151,6 @@ local function RunScript(Item)
         return
     end
 
-    -- Prevent duplicate executions
     if RunningScripts[ScriptID] then
         warn("[BunnyHub] Already running:", ScriptID)
         return
@@ -163,7 +161,6 @@ local function RunScript(Item)
     task.spawn(function()
         local Success, Error = pcall(function()
             for _, URL in ipairs(Urls) do
-                -- Download
                 local DownloadSuccess, Content = pcall(function()
                     return game:HttpGet(URL)
                 end)
@@ -178,7 +175,6 @@ local function RunScript(Item)
                     continue
                 end
 
-                -- Compile
                 local Function, CompileError = loadstring(Content)
 
                 if not Function then
@@ -186,7 +182,6 @@ local function RunScript(Item)
                     continue
                 end
 
-                -- Execute
                 local ExecuteSuccess, ExecuteError = pcall(Function)
 
                 if not ExecuteSuccess then
@@ -279,7 +274,7 @@ SettingsTab:CreateSection("UI Preferences")
 
 SettingsTab:CreateToggle({
     Name = "Start Minimized",
-    CurrentValue = Config.StartMinimized or false,
+    CurrentValue = Config.StartMinimized == true,
     Flag = "StartMinimized_Flag",
     Callback = function(Value)
         Config.StartMinimized = Value
@@ -300,7 +295,6 @@ SettingsTab:CreateToggle({
 AutoTab:CreateSection("Select scripts to auto-run on script load")
 
 for _, Item in ipairs(ScriptsList) do
-    -- Manual Execution Button
     MainTab:CreateButton({
         Name = Item.Name,
         Callback = function()
@@ -313,7 +307,6 @@ for _, Item in ipairs(ScriptsList) do
         end
     })
 
-    -- Auto-Execute Toggle
     AutoTab:CreateToggle({
         Name = "Auto-Execute: " .. Item.Name,
         CurrentValue = Config[Item.ID] == true,
@@ -409,21 +402,22 @@ FloatingButton.MouseButton1Click:Connect(function()
 end)
 
 -- =============================================================
--- 13. INITIAL STARTUP LOGIC (MINIMIZE IF ENABLED)
+-- 13. INITIAL STARTUP LOGIC
 -- =============================================================
 
-task.delay(0.8, function()
-    if Config.StartMinimized then
+-- Ensure initial button icon matches default state
+FloatingButton.Text = "🌸"
+
+task.delay(1, function()
+    -- ONLY minimize if explicitly enabled in config
+    if Config.StartMinimized == true then
         SetHubState(false)
-        
-        task.delay(0.5, function()
-            pcall(function()
-                Rayfield:Notify({
-                    Title = "🐰 BunnyHub",
-                    Content = "Hub minimized on launch. Click 📂 to open.",
-                    Duration = 4
-                })
-            end)
+        pcall(function()
+            Rayfield:Notify({
+                Title = "🐰 BunnyHub",
+                Content = "Hub minimized on launch. Click 📂 to open.",
+                Duration = 4
+            })
         end)
     end
 end)

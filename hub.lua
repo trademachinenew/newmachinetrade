@@ -3,7 +3,7 @@
 -- =============================================================
 local ScriptsList = {
     { Name = "🍯 HONEY COLLECTOR CHOCOLA", ID = "HoneyCollector", Urls = {"https://raw.githubusercontent.com/chocolascript-glitch/Chocola-Auto-Honey/refs/heads/main/script.lua"} },
-    { Name = "🎰 Autospin RNG", ID = "AutoSpinRNG", Urls = {"https://api.luarmor.net/files/v4/loaders/870375c8dfbc1d6521073674fe460cb6.lua", "https://raw.githubusercontent.com/chocolascript-glitch/Chocola-Auto-Spin-RNG/refs/heads/main/script.lua"} },
+    { Name = "🎰 Autospin RNG", ID = "AutoSpinRNG", Urls = {"https://raw.githubusercontent.com/chocolascript-glitch/Chocola-Auto-Spin-RNG/refs/heads/main/script.lua"} },
     { Name = "🌐 SERVERHOPPER FOR AUTOHONEY", ID = "Serverhopper", Urls = {"https://pastefy.app/sFOkaUno/raw"} },
     { Name = "🐝 AUTOBUY BEE SHOP", ID = "AutoBuyBee", Urls = {"https://pastefy.app/FLOSU5Pk/raw"} },
     { Name = "🍯 AUTOCOLLECT HONEY KY", ID = "AutoCollectKY", Urls = {"https://pastefy.app/wdEAoCOz/raw"} },
@@ -18,15 +18,25 @@ local HttpService = game:GetService("HttpService")
 local ConfigFile = "BunnyHub_Config.json"
 local Config = {}
 
--- Función universal para ejecutar scripts
+-- Función universal y segura para ejecutar scripts
 local function RunScript(urls)
-    task.spawn(function()
-        for _, url in ipairs(urls) do
-            task.spawn(function()
-                loadstring(game:HttpGet(url))()
-            end)
-        end
-    end)
+    local targetUrls = type(urls) == "table" and urls or {urls}
+    
+    for _, url in ipairs(targetUrls) do
+        task.spawn(function()
+            local success, scriptContent = pcall(game.HttpGet, game, url)
+            if success and scriptContent then
+                local fn, err = loadstring(scriptContent)
+                if fn then
+                    pcall(fn)
+                else
+                    warn("[BunnyHub] Error al compilar: " .. tostring(err))
+                end
+            else
+                warn("[BunnyHub] Error al descargar: " .. tostring(url))
+            end
+        end)
+    end
 end
 
 -- Cargar configuración guardada
@@ -42,9 +52,9 @@ for _, item in ipairs(ScriptsList) do
 end
 
 -- Persistencia al cambiar de servidor
-local queue_on_teleport = (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
+local queue_on_teleport = queue_on_teleport or (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport)
 if queue_on_teleport then
-    queue_on_teleport([[
+    pcall(queue_on_teleport, [[
         repeat task.wait() until game:IsLoaded()
         loadstring(game:HttpGet("https://vss.pandauth.com/kv/7904e53970612dbd"))()
     ]])

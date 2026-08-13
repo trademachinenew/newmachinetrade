@@ -72,7 +72,7 @@ local LocalPlayer = Players.LocalPlayer
 
 local ConfigFile = "BunnyHub_Config.json"
 local Config = {
-    StartMinimized = true -- Default setting
+    StartMinimized = false -- Default setting
 }
 
 local function SaveConfig()

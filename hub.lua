@@ -1,94 +1,98 @@
--- Cargamos la librería Rayfield UI
+-- =============================================================
+-- 1. LISTA MASTER DE SCRIPTS (Agrega o edita todo desde aquí)
+-- =============================================================
+local ScriptsList = {
+    { Name = "🍯 HONEY COLLECTOR CHOCOLA", ID = "HoneyCollector", Urls = {"https://raw.githubusercontent.com/chocolascript-glitch/Chocola-Auto-Honey/refs/heads/main/script.lua"} },
+    { Name = "🎰 Autospin RNG", ID = "AutoSpinRNG", Urls = {"https://api.luarmor.net/files/v4/loaders/870375c8dfbc1d6521073674fe460cb6.lua", "https://raw.githubusercontent.com/chocolascript-glitch/Chocola-Auto-Spin-RNG/refs/heads/main/script.lua"} },
+    { Name = "🌐 SERVERHOPPER FOR AUTOHONEY", ID = "Serverhopper", Urls = {"https://pastefy.app/sFOkaUno/raw"} },
+    { Name = "🐝 AUTOBUY BEE SHOP", ID = "AutoBuyBee", Urls = {"https://pastefy.app/FLOSU5Pk/raw"} },
+    { Name = "🍯 AUTOCOLLECT HONEY KY", ID = "AutoCollectKY", Urls = {"https://pastefy.app/wdEAoCOz/raw"} },
+    { Name = "🖐️ AUTOGRAB", ID = "AutoGrab", Urls = {"https://pastefy.app/TLsWJj30/raw"} },
+    { Name = "🎟️ CODE REDEEMER", ID = "CodeRedeemer", Urls = {"https://pastefy.app/VvuMZMpR/raw"} },
+}
+
+-- =============================================================
+-- 2. SISTEMA DE GUARDADO LOCAL Y AUTOEXEC
+-- =============================================================
+local HttpService = game:GetService("HttpService")
+local ConfigFile = "BunnyHub_Config.json"
+local Config = {}
+
+-- Función universal para ejecutar scripts
+local function RunScript(urls)
+    task.spawn(function()
+        for _, url in ipairs(urls) do
+            task.spawn(function()
+                loadstring(game:HttpGet(url))()
+            end)
+        end
+    end)
+end
+
+-- Cargar configuración guardada
+if isfile and isfile(ConfigFile) then
+    pcall(function() Config = HttpService:JSONDecode(readfile(ConfigFile)) end)
+end
+
+-- Ejecución automática al cargar si está activado
+for _, item in ipairs(ScriptsList) do
+    if Config[item.ID] then
+        RunScript(item.Urls)
+    end
+end
+
+-- Persistencia al cambiar de servidor
+local queue_on_teleport = (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
+if queue_on_teleport then
+    queue_on_teleport([[
+        repeat task.wait() until game:IsLoaded()
+        loadstring(game:HttpGet("https://vss.pandauth.com/kv/7904e53970612dbd"))()
+    ]])
+end
+
+-- =============================================================
+-- 3. INTERFAZ GRÁFICA (GENERACIÓN AUTOMÁTICA)
+-- =============================================================
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
--- Ventana principal con tema rosado (Theme = "Bloom")
 local Window = Rayfield:CreateWindow({
    Name = "🌸 Hub Scripts | BunnyFreeScripts",
    LoadingTitle = "LOADING...",
    LoadingSubtitle = "BUNNYFREESCRIPTS",
-   Theme = "Bloom", -- Tema rosado / estético
+   Theme = "Bloom",
    ConfigurationSaving = { Enabled = false },
    KeySystem = false
 })
 
 local MainTab = Window:CreateTab("📜 SCRIPTS LIST", 4483362458)
+local AutoTab = Window:CreateTab("⚡ AUTO-EXECUTE", 4483362458)
 
--- BOTÓN 1: HONEY COLLECTOR CHOCOLA
-MainTab:CreateButton({
-   Name = "🍯 HONEY COLLECTOR CHOCOLA",
-   Callback = function()
-       task.spawn(function()
-           loadstring(game:HttpGet("https://raw.githubusercontent.com/chocolascript-glitch/Chocola-Auto-Honey/refs/heads/main/script.lua"))()
-       end)
-       Rayfield:Notify({ Title = "EXECUTED 💖", Content = "Honey Collector ejecutado.", Duration = 3.5 })
-   end,
-})
+AutoTab:CreateSection("Guarda qué scripts quieres que inicien solos")
 
--- BOTÓN 2: AUTOSPIN RNG
-MainTab:CreateButton({
-   Name = "🎰 Autospin RNG",
-   Callback = function()
-       task.spawn(function()
-           loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/870375c8dfbc1d6521073674fe460cb6.lua"))()
-       end)
-       task.spawn(function()
-           loadstring(game:HttpGet("https://raw.githubusercontent.com/chocolascript-glitch/Chocola-Auto-Spin-RNG/refs/heads/main/script.lua"))()
-       end)
-       Rayfield:Notify({ Title = "EXECUTED 💖", Content = "Autospin RNG ejecutado.", Duration = 3.5 })
-   end,
-})
+-- Bucle que genera AUTOMÁTICAMENTE los botones y los toggles
+for _, item in ipairs(ScriptsList) do
+    -- Generar Botón Manual
+    MainTab:CreateButton({
+        Name = item.Name,
+        Callback = function()
+            RunScript(item.Urls)
+            Rayfield:Notify({ Title = "EXECUTED 💖", Content = item.Name .. " ejecutado.", Duration = 3 })
+        end,
+    })
 
--- BOTÓN 3: SERVERHOPPER FOR AUTOHONEY
-MainTab:CreateButton({
-   Name = "🌐 SERVERHOPPER FOR AUTOHONEY",
-   Callback = function()
-       task.spawn(function()
-           loadstring(game:HttpGet("https://pastefy.app/sFOkaUno/raw"))()
-       end)
-       Rayfield:Notify({ Title = "EXECUTED 💖", Content = "Serverhopper ejecutado.", Duration = 3.5 })
-   end,
-})
-
--- BOTÓN 4: AUTOBUY BEE SHOP
-MainTab:CreateButton({
-   Name = "🐝 AUTOBUY BEE SHOP",
-   Callback = function()
-       task.spawn(function()
-           loadstring(game:HttpGet("https://pastefy.app/FLOSU5Pk/raw"))()
-       end)
-       Rayfield:Notify({ Title = "EXECUTED 💖", Content = "Autobuy Bee Shop ejecutado.", Duration = 3.5 })
-   end,
-})
-
--- BOTÓN 5: AUTOCOLLECT HONEY KY
-MainTab:CreateButton({
-   Name = "🍯 AUTOCOLLECT HONEY KY",
-   Callback = function()
-       task.spawn(function()
-           loadstring(game:HttpGet("https://pastefy.app/wdEAoCOz/raw"))()
-       end)
-       Rayfield:Notify({ Title = "EXECUTED 💖", Content = "Autocollect Honey KY ejecutado.", Duration = 3.5 })
-   end,
-})
-
--- BOTÓN 6: AUTOGRAB (Nuevo)
-MainTab:CreateButton({
-   Name = "🖐️ AUTOGRAB",
-   Callback = function()
-       task.spawn(function()
-           loadstring(game:HttpGet("https://pastefy.app/TLsWJj30/raw"))()
-       end)
-       Rayfield:Notify({ Title = "EXECUTED 💖", Content = "Autograb ejecutado.", Duration = 3.5 })
-   end,
-})
-
--- BOTÓN 7: CODE REDEEMER (Nuevo)
-MainTab:CreateButton({
-   Name = "🎟️ CODE REDEEMER",
-   Callback = function()
-       task.spawn(function()
-           loadstring(game:HttpGet("https://pastefy.app/VvuMZMpR/raw"))()
-       end)
-       Rayfield:Notify({ Title = "EXECUTED 💖", Content = "Code Redeemer ejecutado.", Duration = 3.5 })
-   end,
-})
+    -- Generar Toggle de Auto-Ejecución
+    AutoTab:CreateToggle({
+        Name = "Auto-Execute: " .. item.Name,
+        CurrentValue = Config[item.ID] or false,
+        Flag = "Auto_" .. item.ID,
+        Callback = function(Value)
+            Config[item.ID] = Value
+            if writefile then pcall(function() writefile(ConfigFile, HttpService:JSONEncode(Config)) end) end
+            
+            if Value then
+                RunScript(item.Urls)
+                Rayfield:Notify({ Title = "GUARDADO 💖", Content = item.Name .. " activado en auto-start.", Duration = 3 })
+            end
+        end,
+    })
+end

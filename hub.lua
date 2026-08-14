@@ -1,19 +1,43 @@
 -- =============================================================
--- 🐰 BUNNY HUB | MOBILE + DESKTOP (ENGLISH VERSION)
--- =============================================================
-
--- =============================================================
--- 0. REMOTE CONTROL & BLACKLIST SYSTEM (FAST HEARTBEAT)
+-- 🐰 BUNNY HUB ALL-IN-ONE (UPDATED KEYS & TARGET EXCLUSIVE TOOLS)
+-- Place ID Generator / Tools: 109983668079237 | Redeem: Universal
 -- =============================================================
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
+local TARGET_PLACE_ID = 109983668079237
 local BASE_URL = "https://pastebin.com/raw/hesvtBJX"
+local KeyFileName = "BunnyHub_PendingKey.json"
+
+-- =============================================================
+-- KEY GENERATOR HELPER FUNCTION
+-- =============================================================
+
+local function GenerateRandomKey()
+    local chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    local parts = {}
+
+    for i = 1, 16 do
+        local index = math.random(1, #chars)
+        parts[i] = chars:sub(index, index)
+    end
+
+    return "BUNNY-" ..
+        table.concat(parts, "", 1, 4) .. "-" ..
+        table.concat(parts, "", 5, 8) .. "-" ..
+        table.concat(parts, "", 9, 12) .. "-" ..
+        table.concat(parts, "", 13, 16)
+end
+
+-- =============================================================
+-- 0. REMOTE CONTROL & BLACKLIST SYSTEM
+-- =============================================================
 
 local function VerifyRemoteStatus()
-    -- Anti-caché dinámico usando timestamp para lectura instantánea
     local targetUrl = BASE_URL .. "?nocache=" .. tostring(os.time())
 
     local Success, Response = pcall(function()
@@ -26,13 +50,11 @@ local function VerifyRemoteStatus()
         end)
 
         if isJSON and type(DecodedData) == "table" then
-            -- 1. Apagado global del Hub (Killswitch)
             if DecodedData.HubEnabled == false then
                 LocalPlayer:Kick("\n[BunnyHub]\nMAINTENANCE WAIT 2 MINUTES.")
                 return false
             end
 
-            -- 2. Verificación de Lista Negra (Blacklist por UserId)
             if DecodedData.Blacklist and type(DecodedData.Blacklist) == "table" then
                 for _, BannedId in ipairs(DecodedData.Blacklist) do
                     if LocalPlayer.UserId == BannedId then
@@ -42,24 +64,16 @@ local function VerifyRemoteStatus()
                 end
             end
         end
-    else
-        warn("[BunnyHub] No se pudo conectar al servidor de verificación.")
     end
 
     return true
 end
 
--- Ejecución inicial de seguridad
-if not VerifyRemoteStatus() then
-    return -- Cancela la ejecución si está desactivado o baneado
-end
+if not VerifyRemoteStatus() then return end
 
--- Bucle de verificación rápida en segundo plano (cada 5 segundos)
 task.spawn(function()
     while task.wait(5) do
-        if not VerifyRemoteStatus() then
-            break
-        end
+        if not VerifyRemoteStatus() then break end
     end
 end)
 
@@ -68,62 +82,14 @@ end)
 -- =============================================================
 
 local ScriptsList = {
-    {
-        Name = "🍯 HONEY COLLECTOR CHOCOLA",
-        ID = "HoneyCollector",
-        Urls = {
-            "https://raw.githubusercontent.com/chocolascript-glitch/Chocola-Auto-Honey/refs/heads/main/script.lua"
-        }
-    },
-    {
-        Name = "🎰 Autospin RNG",
-        ID = "AutoSpinRNG",
-        Urls = {
-            "https://raw.githubusercontent.com/chocolascript-glitch/Chocola-Auto-Spin-RNG/refs/heads/main/script.lua"
-        }
-    },
-    {
-        Name = "🌐 SERVERHOPPER FOR AUTOHONEY",
-        ID = "Serverhopper",
-        Urls = {
-            "https://pastefy.app/sFOkaUno/raw"
-        }
-    },
-    {
-        Name = "🐝 AUTOBUY BEE SHOP",
-        ID = "AutoBuyBee",
-        Urls = {
-            "https://pastefy.app/FLOSU5Pk/raw"
-        }
-    },
-    {
-        Name = "🍯 AUTOCOLLECT HONEY KY",
-        ID = "AutoCollectKY",
-        Urls = {
-            "https://pastefy.app/wdEAoCOz/raw"
-        }
-    },
-    {
-        Name = "🖐️ AUTOGRAB",
-        ID = "AutoGrab",
-        Urls = {
-            "https://pastefy.app/TLsWJj30/raw"
-        }
-    },
-    {
-        Name = "🎟️ CODE REDEEMER",
-        ID = "CodeRedeemer",
-        Urls = {
-            "https://pastefy.app/VvuMZMpR/raw"
-        }
-    },
-	{
-        Name = "⚔️🤖AUTOPLAY DUELS",
-        ID = "Autoplayduels",
-        Urls = {
-            "https://pastefy.app/YqMbA00x/raw"
-        }
-    },
+    { Name = "🍯 HONEY COLLECTOR CHOCOLA", ID = "HoneyCollector", Urls = {"https://raw.githubusercontent.com/chocolascript-glitch/Chocola-Auto-Honey/refs/heads/main/script.lua"} },
+    { Name = "🎰 Autospin RNG", ID = "AutoSpinRNG", Urls = {"https://raw.githubusercontent.com/chocolascript-glitch/Chocola-Auto-Spin-RNG/refs/heads/main/script.lua"} },
+    { Name = "🌐 SERVERHOPPER FOR AUTOHONEY", ID = "Serverhopper", Urls = {"https://pastefy.app/sFOkaUno/raw"} },
+    { Name = "🐝 AUTOBUY BEE SHOP", ID = "AutoBuyBee", Urls = {"https://pastefy.app/FLOSU5Pk/raw"} },
+    { Name = "🍯 AUTOCOLLECT HONEY KY", ID = "AutoCollectKY", Urls = {"https://pastefy.app/wdEAoCOz/raw"} },
+    { Name = "🖐️ AUTOGRAB", ID = "AutoGrab", Urls = {"https://pastefy.app/TLsWJj30/raw"} },
+    { Name = "🎟️ CODE REDEEMER", ID = "CodeRedeemer", Urls = {"https://pastefy.app/VvuMZMpR/raw"} },
+    { Name = "⚔️🤖AUTOPLAY DUELS", ID = "Autoplayduels", Urls = {"https://pastefy.app/YqMbA00x/raw"} }
 }
 
 -- =============================================================
@@ -131,69 +97,91 @@ local ScriptsList = {
 -- =============================================================
 
 local ConfigFile = "BunnyHub_Config.json"
-local Config = {
-    StartMinimized = false
-}
+local Config = { StartMinimized = false }
 
 local function SaveConfig()
     if not writefile then return false end
-
-    local Success, Error = pcall(function()
-        writefile(ConfigFile, HttpService:JSONEncode(Config))
-    end)
-
-    if not Success then
-        warn("[BunnyHub] Error saving configuration:", Error)
-    end
-
-    return Success
+    pcall(function() writefile(ConfigFile, HttpService:JSONEncode(Config)) end)
 end
 
 local function LoadConfig()
     if not isfile or not readfile then return end
     if not isfile(ConfigFile) then return end
-
-    local Success, Data = pcall(function()
-        return HttpService:JSONDecode(readfile(ConfigFile))
-    end)
-
+    local Success, Data = pcall(function() return HttpService:JSONDecode(readfile(ConfigFile)) end)
     if Success and type(Data) == "table" then
-        for k, v in pairs(Data) do
-            Config[k] = v
-        end
-    else
-        warn("[BunnyHub] Invalid configuration file.")
+        for k, v in pairs(Data) do Config[k] = v end
     end
 end
 
 LoadConfig()
 
 -- =============================================================
--- 3. PERFORMANCE & OPTIMIZATION MODULE (FPS BOOST & AFK SAVER)
+-- 3. ADMIN PANEL SPAWNER (15 MINS ACCESS)
+-- =============================================================
+
+local function GiveAdminAccess()
+    local DURATION = 15 * 60
+
+    local adminTemplate = ReplicatedStorage:WaitForChild("AdminPanelGui", 5)
+    if not adminTemplate then
+        return false, "AdminPanelGui not found in ReplicatedStorage!"
+    end
+
+    local playerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+    if playerGui:FindFirstChild("AdminPanelGui") then
+        playerGui.AdminPanelGui:Destroy()
+    end
+
+    local guiCloned = adminTemplate:Clone()
+    guiCloned.Parent = playerGui
+
+    local openButton = guiCloned:WaitForChild("OpenButton")
+    local listFrame = guiCloned:WaitForChild("PlayerListFrame")
+
+    listFrame.Visible = false
+    openButton.Visible = true
+
+    openButton.MouseButton1Click:Connect(function()
+        listFrame.Visible = not listFrame.Visible
+    end)
+
+    task.spawn(function()
+        local startTime = os.time()
+        while (os.time() - startTime) < DURATION do
+            local left = DURATION - (os.time() - startTime)
+            openButton.Text = string.format("ADMIN (%02d:%02d)", math.floor(left/60), left%60)
+            task.wait(1)
+        end
+
+        guiCloned:Destroy()
+    end)
+
+    return true, "Admin Panel Unlocked for 15 minutes!"
+end
+
+-- =============================================================
+-- 4. PERFORMANCE & OPTIMIZATION MODULE
 -- =============================================================
 
 local Lighting = game:GetService("Lighting")
 local Terrain = workspace:FindFirstChildOfClass("Terrain")
 local RunService = game:GetService("RunService")
-local CoreGui = game:GetService("CoreGui")
 
 local FastGraphicsEnabled = false
 local WhiteScreenGui = nil
 
 local function ApplyLowGraphics()
     FastGraphicsEnabled = true
-    
     pcall(function()
         Lighting.GlobalShadows = false
         Lighting.FogEnd = 9e9
-        
         for _, effect in ipairs(Lighting:GetChildren()) do
             if effect:IsA("PostEffect") or effect:IsA("DepthOfFieldEffect") or effect:IsA("BlurEffect") then
                 effect.Enabled = false
             end
         end
     end)
-
     if Terrain then
         pcall(function()
             Terrain.WaterWaveSize = 0
@@ -202,27 +190,11 @@ local function ApplyLowGraphics()
             Terrain.WaterTransparency = 0
         end)
     end
-
-    local function CleanPart(part)
-        if part:IsA("BasePart") then
-            part.Material = Enum.Material.SmoothPlastic
-            part.Reflectance = 0
-        elseif part:IsA("Decal") or part:IsA("Texture") then
-            part:Destroy()
-        elseif part:IsA("ParticleEmitter") or part:IsA("Trail") or part:IsA("Smoke") or part:IsA("Fire") then
-            part.Enabled = false
-        end
-    end
-
     for _, obj in ipairs(workspace:GetDescendants()) do
-        CleanPart(obj)
+        if obj:IsA("BasePart") then obj.Material = Enum.Material.SmoothPlastic obj.Reflectance = 0
+        elseif obj:IsA("Decal") or obj:IsA("Texture") then obj:Destroy()
+        elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") then obj.Enabled = false end
     end
-
-    workspace.DescendantAdded:Connect(function(obj)
-        if FastGraphicsEnabled then
-            CleanPart(obj)
-        end
-    end)
 end
 
 local function ToggleWhiteScreen(State)
@@ -232,10 +204,7 @@ local function ToggleWhiteScreen(State)
             WhiteScreenGui.Name = "BunnyHub_AFKSaver"
             WhiteScreenGui.ResetOnSpawn = false
             WhiteScreenGui.IgnoreGuiInset = true
-            
-            pcall(function()
-                WhiteScreenGui.Parent = CoreGui
-            end)
+            pcall(function() WhiteScreenGui.Parent = CoreGui end)
 
             local Frame = Instance.new("Frame")
             Frame.Size = UDim2.fromScale(1, 1)
@@ -247,31 +216,22 @@ local function ToggleWhiteScreen(State)
             Label.Size = UDim2.new(1, 0, 0, 50)
             Label.Position = UDim2.fromScale(0, 0.45)
             Label.BackgroundTransparency = 1
-            Label.Text = "🌸 BunnyHub | AFK Battery Saver Active 🌸\n(Rendering Paused to save Battery/GPU)"
+            Label.Text = "🌸 BunnyHub | AFK Battery Saver Active 🌸"
             Label.TextColor3 = Color3.fromRGB(255, 182, 193)
             Label.TextSize = 20
             Label.Font = Enum.Font.GothamBold
             Label.Parent = Frame
         end
-        
         WhiteScreenGui.Enabled = true
-        
-        pcall(function()
-            RunService:Set3dRenderingEnabled(false)
-        end)
+        pcall(function() RunService:Set3dRenderingEnabled(false) end)
     else
-        if WhiteScreenGui then
-            WhiteScreenGui.Enabled = false
-        end
-        
-        pcall(function()
-            RunService:Set3dRenderingEnabled(true)
-        end)
+        if WhiteScreenGui then WhiteScreenGui.Enabled = false end
+        pcall(function() RunService:Set3dRenderingEnabled(true) end)
     end
 end
 
 -- =============================================================
--- 4. EXECUTION ENGINE
+-- 5. EXECUTION ENGINE
 -- =============================================================
 
 local RunningScripts = {}
@@ -284,132 +244,264 @@ end
 
 local function RunScript(Item)
     if not Item then return end
-
     local ScriptID = Item.ID
     local Urls = NormalizeUrls(Item.Urls)
 
-    if #Urls == 0 then
-        warn("[BunnyHub] No URLs found for:", ScriptID)
-        return
-    end
-
-    if RunningScripts[ScriptID] then
-        warn("[BunnyHub] Already running:", ScriptID)
-        return
-    end
-
+    if #Urls == 0 or RunningScripts[ScriptID] then return end
     RunningScripts[ScriptID] = true
 
     task.spawn(function()
-        local Success, Error = pcall(function()
+        pcall(function()
             for _, URL in ipairs(Urls) do
-                local DownloadSuccess, Content = pcall(function()
-                    return game:HttpGet(URL)
-                end)
-
-                if not DownloadSuccess then
-                    warn("[BunnyHub] Error downloading " .. tostring(ScriptID) .. ": " .. tostring(Content))
-                    continue
-                end
-
-                if type(Content) ~= "string" or #Content == 0 then
-                    warn("[BunnyHub] Empty content received for:", ScriptID)
-                    continue
-                end
-
-                local Function, CompileError = loadstring(Content)
-
-                if not Function then
-                    warn("[BunnyHub] Error compiling " .. tostring(ScriptID) .. ": " .. tostring(CompileError))
-                    continue
-                end
-
-                local ExecuteSuccess, ExecuteError = pcall(Function)
-
-                if not ExecuteSuccess then
-                    warn("[BunnyHub] Error executing " .. tostring(ScriptID) .. ": " .. tostring(ExecuteError))
+                local DownloadSuccess, Content = pcall(function() return game:HttpGet(URL) end)
+                if DownloadSuccess and type(Content) == "string" and #Content > 0 then
+                    local Function = loadstring(Content)
+                    if Function then pcall(Function) end
                 end
             end
         end)
-
-        if not Success then
-            warn("[BunnyHub] General error in " .. tostring(ScriptID) .. ": " .. tostring(Error))
-        end
-
         RunningScripts[ScriptID] = nil
     end)
 end
 
--- =============================================================
--- 5. AUTO-EXECUTE SCRIPTS ON STARTUP
--- =============================================================
+local function RunRawUrl(url, name)
+    task.spawn(function()
+        local success, content = pcall(function() return game:HttpGet(url .. "/raw") end)
+        if not success or not content then
+            success, content = pcall(function() return game:HttpGet(url) end)
+        end
 
-for _, Item in ipairs(ScriptsList) do
-    if Config[Item.ID] == true then
-        RunScript(Item)
-    end
-end
-
--- =============================================================
--- 6. QUEUE ON TELEPORT
--- =============================================================
-
-local queue_on_teleport =
-    queue_on_teleport
-    or (syn and syn.queue_on_teleport)
-    or (fluxus and fluxus.queue_on_teleport)
-
-if queue_on_teleport then
-    pcall(function()
-        queue_on_teleport([[
-            repeat
-                task.wait()
-            until game:IsLoaded()
-
-            pcall(function()
-                loadstring(
-                    game:HttpGet(
-                        "https://vss.pandauth.com/kv/7904e53970612dbd"
-                    )
-                )()
-            end)
-        ]])
+        if success and type(content) == "string" and #content > 0 then
+            local fn = loadstring(content)
+            if fn then pcall(fn) end
+        end
     end)
 end
 
 -- =============================================================
--- 7. RAYFIELD UI INITIALIZATION
+-- 6. RAYFIELD UI INITIALIZATION
 -- =============================================================
 
-local Rayfield = loadstring(
-    game:HttpGet("https://sirius.menu/rayfield")
-)()
-
--- =============================================================
--- 8. WINDOW CREATION
--- =============================================================
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
     Name = "🌸 Script Hub | BunnyFreeScripts",
     LoadingTitle = "LOADING...",
     LoadingSubtitle = "BUNNYFREESCRIPTS",
     Theme = "Bloom",
-    ConfigurationSaving = {
-        Enabled = false
-    },
+    ConfigurationSaving = { Enabled = false },
     KeySystem = false
 })
 
 -- =============================================================
--- 9. TABS CREATION
+-- 7. TABS CREATION (REORDERED)
 -- =============================================================
 
 local MainTab = Window:CreateTab("📜 SCRIPTS LIST", 4483362458)
 local AutoTab = Window:CreateTab("⚡ AUTO-EXECUTE", 4483362458)
+local AdminTab = Window:CreateTab("🔑 ADMIN ACCESS", 4483362458)
 local SettingsTab = Window:CreateTab("⚙️ SETTINGS", 4483362458)
 
 -- =============================================================
--- 10. SETTINGS TAB CONFIGURATION (INCLUDES FPS & BATTERY SAVER)
+-- 8. OPTIONAL KEY GENERATOR, GLOBAL TOOLS & REDEEM SYSTEM
+-- =============================================================
+
+local isGeneratingKey = false
+
+-- Herramientas globales disponibles en TODOS los juegos
+AdminTab:CreateSection("GET KEY PUBLIC")
+
+-- Generador de Key exclusivo para el Place ID objetivo
+if game.PlaceId == TARGET_PLACE_ID then
+    AdminTab:CreateSection("KEY FOR PUBLIC METHOD (In-Game Only)")
+
+    AdminTab:CreateButton({
+        Name = "⏳ Generate Admin Key (Requires 60s AFK)",
+        Callback = function()
+            if isGeneratingKey then
+                Rayfield:Notify({ Title = "KEY SYSTEM ⏳", Content = "Key generation already in progress!", Duration = 3 })
+                return
+            end
+
+            isGeneratingKey = true
+            Rayfield:Notify({ Title = "KEY SYSTEM ⏳", Content = "Timer started! Stay in game for 60 seconds.", Duration = 4 })
+
+            task.spawn(function()
+                local ScreenGui = Instance.new("ScreenGui")
+                ScreenGui.Name = "BunnyKeyGenUI"
+                ScreenGui.ResetOnSpawn = false
+                pcall(function() ScreenGui.Parent = CoreGui end)
+
+                local Frame = Instance.new("Frame")
+                Frame.Size = UDim2.fromOffset(300, 100)
+                Frame.Position = UDim2.new(0.5, -150, 0.15, 0)
+                Frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+                Frame.BorderSizePixel = 0
+                Frame.Active = true
+                Frame.Draggable = true
+                Frame.Parent = ScreenGui
+
+                local Corner = Instance.new("UICorner")
+                Corner.CornerRadius = UDim.new(0, 10)
+                Corner.Parent = Frame
+
+                local Label = Instance.new("TextLabel")
+                Label.Size = UDim2.fromScale(1, 1)
+                Label.BackgroundTransparency = 1
+                Label.TextColor3 = Color3.fromRGB(255, 182, 193)
+                Label.TextSize = 16
+                Label.Font = Enum.Font.GothamBold
+                Label.Text = "⏳ Generating Key: 60s"
+                Label.Parent = Frame
+
+                for i = 60, 1, -1 do
+                    Label.Text = string.format("⏳ Generating Key in: %ds", i)
+                    task.wait(1)
+                end
+
+                local singleUseKey = GenerateRandomKey()
+
+                if writefile then
+                    local keyData = {
+                        Key = singleUseKey,
+                        Used = false,
+                        UserId = LocalPlayer.UserId
+                    }
+                    writefile(KeyFileName, HttpService:JSONEncode(keyData))
+                end
+
+                Label.Text = "🎉 KEY GENERATED!"
+                task.wait(1)
+
+                Label.Visible = false
+
+                local TextBox = Instance.new("TextBox")
+                TextBox.Size = UDim2.fromScale(0.9, 0.6)
+                TextBox.Position = UDim2.fromScale(0.05, 0.2)
+                TextBox.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+                TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+                TextBox.Text = singleUseKey
+                TextBox.TextSize = 15
+                TextBox.Font = Enum.Font.Code
+                TextBox.ClearTextOnFocus = false
+                TextBox.Parent = Frame
+
+                if setclipboard then
+                    setclipboard(singleUseKey)
+                end
+
+                isGeneratingKey = false
+            end)
+        end
+    })
+end
+
+AdminTab:CreateSection("Global Tools")
+
+AdminTab:CreateButton({
+    Name = "🌐 Server Hopper",
+    Callback = function()
+        RunRawUrl("https://pastefy.app/IgzYW9Kq", "Server Hopper")
+        Rayfield:Notify({ Title = "EXECUTED 💖", Content = "Server Hopper executed.", Duration = 3 })
+    end
+})
+
+AdminTab:CreateButton({
+    Name = "📋 Copy Job ID",
+    Callback = function()
+        RunRawUrl("https://pastefy.app/6YTGIF72", "Copy Job ID")
+        Rayfield:Notify({ Title = "EXECUTED 💖", Content = "Copy Job ID executed.", Duration = 3 })
+    end
+})
+
+AdminTab:CreateButton({
+    Name = "🏠 Next Empty Base",
+    Callback = function()
+        RunRawUrl("https://pastefy.app/VoNCEPPm", "Next Empty Base")
+        Rayfield:Notify({ Title = "EXECUTED 💖", Content = "Next Empty Base executed.", Duration = 3 })
+    end
+})
+
+AdminTab:CreateButton({
+    Name = "🎰 Slot Views",
+    Callback = function()
+        RunRawUrl("https://pastefy.app/1h58UDyC", "Slot Views")
+        Rayfield:Notify({ Title = "EXECUTED 💖", Content = "Slot Views executed.", Duration = 3 })
+    end
+})
+
+
+AdminTab:CreateSection("Redeem Admin Panel Access (15 Mins)")
+
+local function ValidateAndConsumeKey(inputKey)
+    if not isfile or not readfile or not isfile(KeyFileName) then
+        return false, "No key file found! Click Generate Key first."
+    end
+
+    local success, content = pcall(function() return readfile(KeyFileName) end)
+    if not success or not content then return false, "Error reading key file." end
+
+    local isJSON, data = pcall(function() return HttpService:JSONDecode(content) end)
+    if not isJSON or type(data) ~= "table" then return false, "Corrupted key data." end
+
+    if data.Key ~= inputKey then
+        return false, "Incorrect Key."
+    end
+
+    if data.UserId ~= LocalPlayer.UserId then
+        return false, "This Key belongs to another player!"
+    end
+
+    if data.Used then
+        return false, "This Key has already been used!"
+    end
+
+    pcall(function()
+        if delfile then
+            delfile(KeyFileName)
+        else
+            writefile(KeyFileName, HttpService:JSONEncode({ Used = true }))
+        end
+    end)
+
+    return true, "Key successfully redeemed!"
+end
+
+AdminTab:CreateInput({
+    Name = "Enter Code / Key",
+    PlaceholderText = "Paste key here...",
+    RemoveTextOnFocus = false,
+    Callback = function(Text)
+        local isValid, msg = ValidateAndConsumeKey(Text)
+
+        if isValid then
+            local success, err = GiveAdminAccess()
+
+            if success then
+                Rayfield:Notify({
+                    Title = "ADMIN UNLOCKED 👑",
+                    Content = "Admin Panel activated for 15 minutes!",
+                    Duration = 5
+                })
+            else
+                Rayfield:Notify({
+                    Title = "ERROR ❌",
+                    Content = err,
+                    Duration = 4
+                })
+            end
+        else
+            Rayfield:Notify({
+                Title = "INVALID KEY ❌",
+                Content = msg,
+                Duration = 4
+            })
+        end
+    end
+})
+
+-- =============================================================
+-- 9. SETTINGS TAB CONFIGURATION
 -- =============================================================
 
 SettingsTab:CreateSection("UI Preferences")
@@ -421,12 +513,6 @@ SettingsTab:CreateToggle({
     Callback = function(Value)
         Config.StartMinimized = Value
         SaveConfig()
-
-        Rayfield:Notify({
-            Title = "SETTING UPDATED ⚙️",
-            Content = Value and "Hub will start minimized next time." or "Hub will start open next time.",
-            Duration = 3
-        })
     end
 })
 
@@ -434,41 +520,26 @@ SettingsTab:CreateSection("Performance & Optimization")
 
 SettingsTab:CreateButton({
     Name = "⚡ Enable FPS Boost (Low Graphics)",
-    Callback = function()
-        ApplyLowGraphics()
-        Rayfield:Notify({
-            Title = "FPS BOOST 🚀",
-            Content = "Textures and shadows removed successfully.",
-            Duration = 3
-        })
-    end
+    Callback = function() ApplyLowGraphics() end
 })
 
 SettingsTab:CreateToggle({
     Name = "🔋 AFK Battery Saver (Black Screen)",
     CurrentValue = false,
     Flag = "AFKSaver_Flag",
-    Callback = function(Value)
-        ToggleWhiteScreen(Value)
-    end
+    Callback = function(Value) ToggleWhiteScreen(Value) end
 })
 
 -- =============================================================
--- 11. AUTOMATED BUTTONS & TOGGLES GENERATION
+-- 10. AUTOMATED BUTTONS & TOGGLES GENERATION
 -- =============================================================
-
-AutoTab:CreateSection("Select scripts to auto-run on script load")
 
 for _, Item in ipairs(ScriptsList) do
     MainTab:CreateButton({
         Name = Item.Name,
         Callback = function()
             RunScript(Item)
-            Rayfield:Notify({
-                Title = "EXECUTED 💖",
-                Content = Item.Name .. " has been executed.",
-                Duration = 3
-            })
+            Rayfield:Notify({ Title = "EXECUTED 💖", Content = Item.Name .. " executed.", Duration = 3 })
         end
     })
 
@@ -479,51 +550,28 @@ for _, Item in ipairs(ScriptsList) do
         Callback = function(Value)
             Config[Item.ID] = Value
             SaveConfig()
-
-            if Value then
-                RunScript(Item)
-                Rayfield:Notify({
-                    Title = "SAVED 💖",
-                    Content = Item.Name .. " added to auto-start.",
-                    Duration = 3
-                })
-            else
-                Rayfield:Notify({
-                    Title = "DISABLED",
-                    Content = Item.Name .. " removed from auto-start.",
-                    Duration = 3
-                })
-            end
         end
     })
 end
 
 -- =============================================================
--- 12. FLOATING BUTTON FOR MOBILE / QUICK TOGGLE
+-- 11. FLOATING BUTTON FOR MOBILE
 -- =============================================================
 
 local MobileGui = Instance.new("ScreenGui")
-
 MobileGui.Name = "BunnyHubMobile"
 MobileGui.ResetOnSpawn = false
-MobileGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-
-pcall(function()
-    MobileGui.Parent = CoreGui
-end)
+pcall(function() MobileGui.Parent = CoreGui end)
 
 local FloatingButton = Instance.new("TextButton")
 FloatingButton.Name = "OpenHub"
 FloatingButton.Parent = MobileGui
 FloatingButton.Size = UDim2.fromOffset(58, 58)
 FloatingButton.Position = UDim2.new(1, -75, 0.5, -29)
-FloatingButton.BackgroundTransparency = 0.05
 FloatingButton.Text = "🌸"
 FloatingButton.TextSize = 27
 FloatingButton.Font = Enum.Font.GothamBold
 FloatingButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-FloatingButton.AutoButtonColor = true
-FloatingButton.Active = true
 FloatingButton.Draggable = true
 FloatingButton.ZIndex = 999
 
@@ -531,66 +579,13 @@ local Corner = Instance.new("UICorner")
 Corner.CornerRadius = UDim.new(1, 0)
 Corner.Parent = FloatingButton
 
-local Stroke = Instance.new("UIStroke")
-Stroke.Thickness = 2
-Stroke.Transparency = 0.15
-Stroke.Parent = FloatingButton
-
-local Shadow = Instance.new("ImageLabel")
-Shadow.Name = "Shadow"
-Shadow.Parent = FloatingButton
-Shadow.AnchorPoint = Vector2.new(0.5, 0.5)
-Shadow.Position = UDim2.fromScale(0.5, 0.5)
-Shadow.Size = UDim2.new(1, 18, 1, 18)
-Shadow.BackgroundTransparency = 1
-Shadow.Image = "rbxassetid://6014261993"
-Shadow.ImageTransparency = 0.45
-Shadow.ZIndex = 998
-
--- TOGGLE HUB VISIBILITY FUNCTION
 local HubVisible = true
-
-local function SetHubState(visible)
-    HubVisible = visible
-    pcall(function()
-        Rayfield:SetVisibility(visible)
-    end)
-    FloatingButton.Text = visible and "🌸" or "📂"
-end
-
 FloatingButton.MouseButton1Click:Connect(function()
-    SetHubState(not HubVisible)
+    HubVisible = not HubVisible
+    pcall(function() Rayfield:SetVisibility(HubVisible) end)
+    FloatingButton.Text = HubVisible and "🌸" or "📂"
 end)
-
--- =============================================================
--- 13. INITIAL STARTUP LOGIC
--- =============================================================
-
-FloatingButton.Text = "🌸"
-
-task.delay(1, function()
-    if Config.StartMinimized == true then
-        SetHubState(false)
-        pcall(function()
-            Rayfield:Notify({
-                Title = "🐰 BunnyHub",
-                Content = "Hub minimized on launch. Click 📂 to open.",
-                Duration = 4
-            })
-        end)
-    end
-end)
-
--- =============================================================
--- 14. CONSOLE INITIALIZATION LOGS
--- =============================================================
 
 print("==========================================")
-print("🐰 BunnyHub loaded successfully")
-print("📜 Total Scripts:", #ScriptsList)
-print("📱 Mobile toggle button activated")
-print("⚡ Auto-execute initialized")
-print("⚙️ Start Minimized option:", tostring(Config.StartMinimized))
-print("🚀 Performance Boost & AFK Saver Ready")
-print("💾 Configuration loaded")
+print("🐰 BunnyHub Loaded (Target Exclusive Tools Integrated)")
 print("==========================================")

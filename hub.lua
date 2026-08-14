@@ -293,6 +293,13 @@ local Window = Rayfield:CreateWindow({
     KeySystem = false
 })
 
+-- 👇 AGREGA ESTA LÍNEA AQUÍ PARA MINIMIZAR AL INICIAR SI ESTÁ ACTIVADO
+if Config.StartMinimized then
+    pcall(function()
+        Rayfield:SetVisibility(false)
+    end)
+end
+
 -- =============================================================
 -- 7. TABS CREATION (REORDERED)
 -- =============================================================

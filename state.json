@@ -1,0 +1,7 @@
+{
+  "HubEnabled": true,
+  "Blacklist": [
+    123456789,
+    987654321
+  ]
+}

@@ -3,27 +3,24 @@
 -- =============================================================
 
 -- =============================================================
--- 0. REMOTE CONTROL & BLACKLIST SYSTEM (HEARTBEAT)
+-- 0. REMOTE CONTROL & BLACKLIST SYSTEM (FAST HEARTBEAT)
 -- =============================================================
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
--- URL de tu archivo JSON de control (puedes alojarlo en GitHub Raw, Pastebin, etc.)
-local CONTROL_URL = "https://pastebin.com/raw/hesvtBJX"
+local BASE_URL = "https://pastebin.com/raw/hesvtBJX"
 
 local function VerifyRemoteStatus()
+    -- Anti-caché dinámico usando timestamp para lectura instantánea
+    local targetUrl = BASE_URL .. "?nocache=" .. tostring(os.time())
+
     local Success, Response = pcall(function()
-        return game:HttpGet(CONTROL_URL)
+        return game:HttpGet(targetUrl)
     end)
 
     if Success and type(Response) == "string" then
-        local DecodeSuccess, Data = pcall(function()
-            return HttpService:JSONEncode(Response) -- Reemplazar por JSONDecode si el servidor devuelve un string JSON
-        end)
-
-        -- Para este ejemplo, procesamos mediante parseo directo si es JSON básico:
         local isJSON, DecodedData = pcall(function()
             return HttpService:JSONDecode(Response)
         end)
@@ -36,7 +33,7 @@ local function VerifyRemoteStatus()
             end
 
             -- 2. Verificación de Lista Negra (Blacklist por UserId)
-            if DecodedData.Blacklist then
+            if DecodedData.Blacklist and type(DecodedData.Blacklist) == "table" then
                 for _, BannedId in ipairs(DecodedData.Blacklist) do
                     if LocalPlayer.UserId == BannedId then
                         LocalPlayer:Kick("\n[BunnyHub]\nRATE LIMITED PROTECTION.")
@@ -46,7 +43,7 @@ local function VerifyRemoteStatus()
             end
         end
     else
-        warn("[BunnyHub] No se pudo conectar al servidor de verificación. Continuando...")
+        warn("[BunnyHub] No se pudo conectar al servidor de verificación.")
     end
 
     return true
@@ -54,12 +51,12 @@ end
 
 -- Ejecución inicial de seguridad
 if not VerifyRemoteStatus() then
-    return -- Cancela la ejecución del script completo
+    return -- Cancela la ejecución si está desactivado o baneado
 end
 
--- Bucle de verificación en segundo plano (revisa cada 30 segundos en tiempo real)
+-- Bucle de verificación rápida en segundo plano (cada 5 segundos)
 task.spawn(function()
-    while task.wait(30) do
+    while task.wait(5) do
         if not VerifyRemoteStatus() then
             break
         end
@@ -120,6 +117,13 @@ local ScriptsList = {
             "https://pastefy.app/VvuMZMpR/raw"
         }
     },
+	{
+        Name = "⚔️🤖AUTOPLAY DUELS",
+        ID = "Autoplayduels",
+        Urls = {
+            "https://pastefy.app/YqMbA00x/raw"
+        }
+    },
 }
 
 -- =============================================================
@@ -132,15 +136,10 @@ local Config = {
 }
 
 local function SaveConfig()
-    if not writefile then
-        return false
-    end
+    if not writefile then return false end
 
     local Success, Error = pcall(function()
-        writefile(
-            ConfigFile,
-            HttpService:JSONEncode(Config)
-        )
+        writefile(ConfigFile, HttpService:JSONEncode(Config))
     end)
 
     if not Success then
@@ -151,18 +150,11 @@ local function SaveConfig()
 end
 
 local function LoadConfig()
-    if not isfile or not readfile then
-        return
-    end
-
-    if not isfile(ConfigFile) then
-        return
-    end
+    if not isfile or not readfile then return end
+    if not isfile(ConfigFile) then return end
 
     local Success, Data = pcall(function()
-        return HttpService:JSONDecode(
-            readfile(ConfigFile)
-        )
+        return HttpService:JSONDecode(readfile(ConfigFile))
     end)
 
     if Success and type(Data) == "table" then
@@ -177,27 +169,121 @@ end
 LoadConfig()
 
 -- =============================================================
--- 3. EXECUTION ENGINE
+-- 3. PERFORMANCE & OPTIMIZATION MODULE (FPS BOOST & AFK SAVER)
+-- =============================================================
+
+local Lighting = game:GetService("Lighting")
+local Terrain = workspace:FindFirstChildOfClass("Terrain")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+
+local FastGraphicsEnabled = false
+local WhiteScreenGui = nil
+
+local function ApplyLowGraphics()
+    FastGraphicsEnabled = true
+    
+    pcall(function()
+        Lighting.GlobalShadows = false
+        Lighting.FogEnd = 9e9
+        
+        for _, effect in ipairs(Lighting:GetChildren()) do
+            if effect:IsA("PostEffect") or effect:IsA("DepthOfFieldEffect") or effect:IsA("BlurEffect") then
+                effect.Enabled = false
+            end
+        end
+    end)
+
+    if Terrain then
+        pcall(function()
+            Terrain.WaterWaveSize = 0
+            Terrain.WaterWaveSpeed = 0
+            Terrain.WaterReflectance = 0
+            Terrain.WaterTransparency = 0
+        end)
+    end
+
+    local function CleanPart(part)
+        if part:IsA("BasePart") then
+            part.Material = Enum.Material.SmoothPlastic
+            part.Reflectance = 0
+        elseif part:IsA("Decal") or part:IsA("Texture") then
+            part:Destroy()
+        elseif part:IsA("ParticleEmitter") or part:IsA("Trail") or part:IsA("Smoke") or part:IsA("Fire") then
+            part.Enabled = false
+        end
+    end
+
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        CleanPart(obj)
+    end
+
+    workspace.DescendantAdded:Connect(function(obj)
+        if FastGraphicsEnabled then
+            CleanPart(obj)
+        end
+    end)
+end
+
+local function ToggleWhiteScreen(State)
+    if State then
+        if not WhiteScreenGui then
+            WhiteScreenGui = Instance.new("ScreenGui")
+            WhiteScreenGui.Name = "BunnyHub_AFKSaver"
+            WhiteScreenGui.ResetOnSpawn = false
+            WhiteScreenGui.IgnoreGuiInset = true
+            
+            pcall(function()
+                WhiteScreenGui.Parent = CoreGui
+            end)
+
+            local Frame = Instance.new("Frame")
+            Frame.Size = UDim2.fromScale(1, 1)
+            Frame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+            Frame.BorderSizePixel = 0
+            Frame.Parent = WhiteScreenGui
+
+            local Label = Instance.new("TextLabel")
+            Label.Size = UDim2.new(1, 0, 0, 50)
+            Label.Position = UDim2.fromScale(0, 0.45)
+            Label.BackgroundTransparency = 1
+            Label.Text = "🌸 BunnyHub | AFK Battery Saver Active 🌸\n(Rendering Paused to save Battery/GPU)"
+            Label.TextColor3 = Color3.fromRGB(255, 182, 193)
+            Label.TextSize = 20
+            Label.Font = Enum.Font.GothamBold
+            Label.Parent = Frame
+        end
+        
+        WhiteScreenGui.Enabled = true
+        
+        pcall(function()
+            RunService:Set3dRenderingEnabled(false)
+        end)
+    else
+        if WhiteScreenGui then
+            WhiteScreenGui.Enabled = false
+        end
+        
+        pcall(function()
+            RunService:Set3dRenderingEnabled(true)
+        end)
+    end
+end
+
+-- =============================================================
+-- 4. EXECUTION ENGINE
 -- =============================================================
 
 local RunningScripts = {}
 
 local function NormalizeUrls(Urls)
-    if type(Urls) == "string" then
-        return {Urls}
-    end
-
-    if type(Urls) == "table" then
-        return Urls
-    end
-
+    if type(Urls) == "string" then return {Urls} end
+    if type(Urls) == "table" then return Urls end
     return {}
 end
 
 local function RunScript(Item)
-    if not Item then
-        return
-    end
+    if not Item then return end
 
     local ScriptID = Item.ID
     local Urls = NormalizeUrls(Item.Urls)
@@ -255,7 +341,7 @@ local function RunScript(Item)
 end
 
 -- =============================================================
--- 4. AUTO-EXECUTE SCRIPTS ON STARTUP
+-- 5. AUTO-EXECUTE SCRIPTS ON STARTUP
 -- =============================================================
 
 for _, Item in ipairs(ScriptsList) do
@@ -265,7 +351,7 @@ for _, Item in ipairs(ScriptsList) do
 end
 
 -- =============================================================
--- 5. QUEUE ON TELEPORT
+-- 6. QUEUE ON TELEPORT
 -- =============================================================
 
 local queue_on_teleport =
@@ -292,7 +378,7 @@ if queue_on_teleport then
 end
 
 -- =============================================================
--- 6. RAYFIELD UI INITIALIZATION
+-- 7. RAYFIELD UI INITIALIZATION
 -- =============================================================
 
 local Rayfield = loadstring(
@@ -300,7 +386,7 @@ local Rayfield = loadstring(
 )()
 
 -- =============================================================
--- 7. WINDOW CREATION
+-- 8. WINDOW CREATION
 -- =============================================================
 
 local Window = Rayfield:CreateWindow({
@@ -315,7 +401,7 @@ local Window = Rayfield:CreateWindow({
 })
 
 -- =============================================================
--- 8. TABS CREATION
+-- 9. TABS CREATION
 -- =============================================================
 
 local MainTab = Window:CreateTab("📜 SCRIPTS LIST", 4483362458)
@@ -323,7 +409,7 @@ local AutoTab = Window:CreateTab("⚡ AUTO-EXECUTE", 4483362458)
 local SettingsTab = Window:CreateTab("⚙️ SETTINGS", 4483362458)
 
 -- =============================================================
--- 9. SETTINGS TAB CONFIGURATION
+-- 10. SETTINGS TAB CONFIGURATION (INCLUDES FPS & BATTERY SAVER)
 -- =============================================================
 
 SettingsTab:CreateSection("UI Preferences")
@@ -344,8 +430,31 @@ SettingsTab:CreateToggle({
     end
 })
 
+SettingsTab:CreateSection("Performance & Optimization")
+
+SettingsTab:CreateButton({
+    Name = "⚡ Enable FPS Boost (Low Graphics)",
+    Callback = function()
+        ApplyLowGraphics()
+        Rayfield:Notify({
+            Title = "FPS BOOST 🚀",
+            Content = "Textures and shadows removed successfully.",
+            Duration = 3
+        })
+    end
+})
+
+SettingsTab:CreateToggle({
+    Name = "🔋 AFK Battery Saver (Black Screen)",
+    CurrentValue = false,
+    Flag = "AFKSaver_Flag",
+    Callback = function(Value)
+        ToggleWhiteScreen(Value)
+    end
+})
+
 -- =============================================================
--- 10. AUTOMATED BUTTONS & TOGGLES GENERATION
+-- 11. AUTOMATED BUTTONS & TOGGLES GENERATION
 -- =============================================================
 
 AutoTab:CreateSection("Select scripts to auto-run on script load")
@@ -390,10 +499,9 @@ for _, Item in ipairs(ScriptsList) do
 end
 
 -- =============================================================
--- 11. FLOATING BUTTON FOR MOBILE / QUICK TOGGLE
+-- 12. FLOATING BUTTON FOR MOBILE / QUICK TOGGLE
 -- =============================================================
 
-local CoreGui = game:GetService("CoreGui")
 local MobileGui = Instance.new("ScreenGui")
 
 MobileGui.Name = "BunnyHubMobile"
@@ -455,7 +563,7 @@ FloatingButton.MouseButton1Click:Connect(function()
 end)
 
 -- =============================================================
--- 12. INITIAL STARTUP LOGIC
+-- 13. INITIAL STARTUP LOGIC
 -- =============================================================
 
 FloatingButton.Text = "🌸"
@@ -474,7 +582,7 @@ task.delay(1, function()
 end)
 
 -- =============================================================
--- 13. CONSOLE INITIALIZATION LOGS
+-- 14. CONSOLE INITIALIZATION LOGS
 -- =============================================================
 
 print("==========================================")
@@ -483,5 +591,6 @@ print("📜 Total Scripts:", #ScriptsList)
 print("📱 Mobile toggle button activated")
 print("⚡ Auto-execute initialized")
 print("⚙️ Start Minimized option:", tostring(Config.StartMinimized))
+print("🚀 Performance Boost & AFK Saver Ready")
 print("💾 Configuration loaded")
 print("==========================================")

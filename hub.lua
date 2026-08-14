@@ -3,6 +3,70 @@
 -- =============================================================
 
 -- =============================================================
+-- 0. REMOTE CONTROL & BLACKLIST SYSTEM (HEARTBEAT)
+-- =============================================================
+
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- URL de tu archivo JSON de control (puedes alojarlo en GitHub Raw, Pastebin, etc.)
+local CONTROL_URL = "https://pastebin.com/raw/hesvtBJX"
+
+local function VerifyRemoteStatus()
+    local Success, Response = pcall(function()
+        return game:HttpGet(CONTROL_URL)
+    end)
+
+    if Success and type(Response) == "string" then
+        local DecodeSuccess, Data = pcall(function()
+            return HttpService:JSONEncode(Response) -- Reemplazar por JSONDecode si el servidor devuelve un string JSON
+        end)
+
+        -- Para este ejemplo, procesamos mediante parseo directo si es JSON básico:
+        local isJSON, DecodedData = pcall(function()
+            return HttpService:JSONDecode(Response)
+        end)
+
+        if isJSON and type(DecodedData) == "table" then
+            -- 1. Apagado global del Hub (Killswitch)
+            if DecodedData.HubEnabled == false then
+                LocalPlayer:Kick("\n[BunnyHub]\nMAINTENANCE WAIT 2 MINUTES.")
+                return false
+            end
+
+            -- 2. Verificación de Lista Negra (Blacklist por UserId)
+            if DecodedData.Blacklist then
+                for _, BannedId in ipairs(DecodedData.Blacklist) do
+                    if LocalPlayer.UserId == BannedId then
+                        LocalPlayer:Kick("\n[BunnyHub]\nRATE LIMITED PROTECTION.")
+                        return false
+                    end
+                end
+            end
+        end
+    else
+        warn("[BunnyHub] No se pudo conectar al servidor de verificación. Continuando...")
+    end
+
+    return true
+end
+
+-- Ejecución inicial de seguridad
+if not VerifyRemoteStatus() then
+    return -- Cancela la ejecución del script completo
+end
+
+-- Bucle de verificación en segundo plano (revisa cada 30 segundos en tiempo real)
+task.spawn(function()
+    while task.wait(30) do
+        if not VerifyRemoteStatus() then
+            break
+        end
+    end
+end)
+
+-- =============================================================
 -- 1. MASTER SCRIPT LIST
 -- =============================================================
 
@@ -59,20 +123,12 @@ local ScriptsList = {
 }
 
 -- =============================================================
--- 2. SERVICES
--- =============================================================
-
-local HttpService = game:GetService("HttpService")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
--- =============================================================
--- 3. CONFIGURATION MANAGEMENT
+-- 2. CONFIGURATION MANAGEMENT
 -- =============================================================
 
 local ConfigFile = "BunnyHub_Config.json"
 local Config = {
-    StartMinimized = false -- Visible by default for new users
+    StartMinimized = false
 }
 
 local function SaveConfig()
@@ -121,7 +177,7 @@ end
 LoadConfig()
 
 -- =============================================================
--- 4. EXECUTION ENGINE
+-- 3. EXECUTION ENGINE
 -- =============================================================
 
 local RunningScripts = {}
@@ -199,7 +255,7 @@ local function RunScript(Item)
 end
 
 -- =============================================================
--- 5. AUTO-EXECUTE SCRIPTS ON STARTUP
+-- 4. AUTO-EXECUTE SCRIPTS ON STARTUP
 -- =============================================================
 
 for _, Item in ipairs(ScriptsList) do
@@ -209,7 +265,7 @@ for _, Item in ipairs(ScriptsList) do
 end
 
 -- =============================================================
--- 6. QUEUE ON TELEPORT
+-- 5. QUEUE ON TELEPORT
 -- =============================================================
 
 local queue_on_teleport =
@@ -236,7 +292,7 @@ if queue_on_teleport then
 end
 
 -- =============================================================
--- 7. RAYFIELD UI INITIALIZATION
+-- 6. RAYFIELD UI INITIALIZATION
 -- =============================================================
 
 local Rayfield = loadstring(
@@ -244,7 +300,7 @@ local Rayfield = loadstring(
 )()
 
 -- =============================================================
--- 8. WINDOW CREATION
+-- 7. WINDOW CREATION
 -- =============================================================
 
 local Window = Rayfield:CreateWindow({
@@ -259,7 +315,7 @@ local Window = Rayfield:CreateWindow({
 })
 
 -- =============================================================
--- 9. TABS CREATION
+-- 8. TABS CREATION
 -- =============================================================
 
 local MainTab = Window:CreateTab("📜 SCRIPTS LIST", 4483362458)
@@ -267,7 +323,7 @@ local AutoTab = Window:CreateTab("⚡ AUTO-EXECUTE", 4483362458)
 local SettingsTab = Window:CreateTab("⚙️ SETTINGS", 4483362458)
 
 -- =============================================================
--- 10. SETTINGS TAB CONFIGURATION
+-- 9. SETTINGS TAB CONFIGURATION
 -- =============================================================
 
 SettingsTab:CreateSection("UI Preferences")
@@ -289,7 +345,7 @@ SettingsTab:CreateToggle({
 })
 
 -- =============================================================
--- 11. AUTOMATED BUTTONS & TOGGLES GENERATION
+-- 10. AUTOMATED BUTTONS & TOGGLES GENERATION
 -- =============================================================
 
 AutoTab:CreateSection("Select scripts to auto-run on script load")
@@ -334,7 +390,7 @@ for _, Item in ipairs(ScriptsList) do
 end
 
 -- =============================================================
--- 12. FLOATING BUTTON FOR MOBILE / QUICK TOGGLE
+-- 11. FLOATING BUTTON FOR MOBILE / QUICK TOGGLE
 -- =============================================================
 
 local CoreGui = game:GetService("CoreGui")
@@ -383,10 +439,7 @@ Shadow.Image = "rbxassetid://6014261993"
 Shadow.ImageTransparency = 0.45
 Shadow.ZIndex = 998
 
--- =============================================================
 -- TOGGLE HUB VISIBILITY FUNCTION
--- =============================================================
-
 local HubVisible = true
 
 local function SetHubState(visible)
@@ -402,14 +455,12 @@ FloatingButton.MouseButton1Click:Connect(function()
 end)
 
 -- =============================================================
--- 13. INITIAL STARTUP LOGIC
+-- 12. INITIAL STARTUP LOGIC
 -- =============================================================
 
--- Ensure initial button icon matches default state
 FloatingButton.Text = "🌸"
 
 task.delay(1, function()
-    -- ONLY minimize if explicitly enabled in config
     if Config.StartMinimized == true then
         SetHubState(false)
         pcall(function()
@@ -423,7 +474,7 @@ task.delay(1, function()
 end)
 
 -- =============================================================
--- 14. CONSOLE INITIALIZATION LOGS
+-- 13. CONSOLE INITIALIZATION LOGS
 -- =============================================================
 
 print("==========================================")

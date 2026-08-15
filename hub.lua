@@ -562,6 +562,27 @@ for _, Item in ipairs(ScriptsList) do
 end
 
 -- =============================================================
+-- 10.5. AUTO-EXECUTE SAVED SCRIPTS
+-- =============================================================
+
+task.spawn(function()
+    -- Esperar un poco para que el juego termine de cargar
+    task.wait(3)
+
+    for _, Item in ipairs(ScriptsList) do
+        if Config[Item.ID] == true then
+            print("[BunnyHub] Auto-executing: " .. Item.Name)
+
+            RunScript(Item)
+
+            task.wait(1)
+        end
+    end
+
+    print("[BunnyHub] Auto-execute startup scan completed.")
+end)
+
+-- =============================================================
 -- 11. FLOATING BUTTON FOR MOBILE
 -- =============================================================
 

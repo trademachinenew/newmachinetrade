@@ -1,5 +1,5 @@
 -- =============================================================
--- 🐰 BUNNY HUB ALL-IN-ONE (UPDATED KEYS & TARGET EXCLUSIVE TOOLS)
+-- 🐰 BUNNY HUB ALL-IN-ONE (OPTIMIZED FOR MOBILE & LOW-END PCS)
 -- Place ID Generator / Tools: 109983668079237 | Redeem: Universal
 -- =============================================================
 
@@ -7,8 +7,12 @@ local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CoreGui = game:GetService("CoreGui")
-local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
+local Terrain = workspace:FindFirstChildOfClass("Terrain")
 
+local LocalPlayer = Players.LocalPlayer
 local TARGET_PLACE_ID = 109983668079237
 local BASE_URL = "https://pastebin.com/raw/hesvtBJX"
 local KeyFileName = "BunnyHub_PendingKey.json"
@@ -34,7 +38,7 @@ local function GenerateRandomKey()
 end
 
 -- =============================================================
--- 0. REMOTE CONTROL & BLACKLIST SYSTEM
+-- 0. REMOTE CONTROL & BLACKLIST SYSTEM (POLLING REDUCIDO A 45s)
 -- =============================================================
 
 local function VerifyRemoteStatus()
@@ -72,7 +76,7 @@ end
 if not VerifyRemoteStatus() then return end
 
 task.spawn(function()
-    while task.wait(5) do
+    while task.wait(45) do -- Polling optimizado a 45 segundos
         if not VerifyRemoteStatus() then break end
     end
 end)
@@ -155,25 +159,36 @@ local function GiveAdminAccess()
             task.wait(1)
         end
 
-        guiCloned:Destroy()
+        if guiCloned then guiCloned:Destroy() end
     end)
 
     return true, "Admin Panel Unlocked for 15 minutes!"
 end
 
 -- =============================================================
--- 4. PERFORMANCE & OPTIMIZATION MODULE
+-- 4. PERFORMANCE & OPTIMIZATION MODULE (OPTIMIZADO POR LOTES)
 -- =============================================================
-
-local Lighting = game:GetService("Lighting")
-local Terrain = workspace:FindFirstChildOfClass("Terrain")
-local RunService = game:GetService("RunService")
 
 local FastGraphicsEnabled = false
 local WhiteScreenGui = nil
+local OptimizationConnection = nil
+
+local function OptimizeObject(obj)
+    if obj:IsA("BasePart") then
+        obj.Material = Enum.Material.SmoothPlastic
+        obj.Reflectance = 0
+    elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") then
+        obj.Enabled = false
+    elseif obj:IsA("PostEffect") or obj:IsA("DepthOfFieldEffect") or obj:IsA("BlurEffect") then
+        obj.Enabled = false
+    end
+end
 
 local function ApplyLowGraphics()
+    if FastGraphicsEnabled then return end
     FastGraphicsEnabled = true
+
+    -- 1. Iluminación y Terreno (Operaciones globales rápidas)
     pcall(function()
         Lighting.GlobalShadows = false
         Lighting.FogEnd = 9e9
@@ -183,6 +198,7 @@ local function ApplyLowGraphics()
             end
         end
     end)
+
     if Terrain then
         pcall(function()
             Terrain.WaterWaveSize = 0
@@ -191,10 +207,31 @@ local function ApplyLowGraphics()
             Terrain.WaterTransparency = 0
         end)
     end
-    for _, obj in ipairs(workspace:GetDescendants()) do
-        if obj:IsA("BasePart") then obj.Material = Enum.Material.SmoothPlastic obj.Reflectance = 0
-        elseif obj:IsA("Decal") or obj:IsA("Texture") then obj:Destroy()
-        elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") then obj.Enabled = false end
+
+    -- 2. Procesamiento por lotes para evitar tirones (150 objetos por frame)
+    task.spawn(function()
+        local allObjects = workspace:GetDescendants()
+        local batchSize = 150
+        local count = 0
+
+        for i = 1, #allObjects do
+            OptimizeObject(allObjects[i])
+            count = count + 1
+
+            if count >= batchSize then
+                count = 0
+                task.wait() -- Libera el hilo principal para mantener FPS estables
+            end
+        end
+    end)
+
+    -- 3. Escuchar nuevos objetos dinámicos que se spawneen
+    if not OptimizationConnection then
+        OptimizationConnection = workspace.DescendantAdded:Connect(function(child)
+            if FastGraphicsEnabled then
+                OptimizeObject(child)
+            end
+        end)
     end
 end
 
@@ -294,7 +331,6 @@ local Window = Rayfield:CreateWindow({
     KeySystem = false
 })
 
--- 👇 AGREGA ESTA LÍNEA AQUÍ PARA MINIMIZAR AL INICIAR SI ESTÁ ACTIVADO
 if Config.StartMinimized then
     pcall(function()
         Rayfield:SetVisibility(false)
@@ -302,7 +338,7 @@ if Config.StartMinimized then
 end
 
 -- =============================================================
--- 7. TABS CREATION (REORDERED)
+-- 7. TABS CREATION
 -- =============================================================
 
 local MainTab = Window:CreateTab("📜 SCRIPTS LIST", 4483362458)
@@ -316,10 +352,8 @@ local SettingsTab = Window:CreateTab("⚙️ SETTINGS", 4483362458)
 
 local isGeneratingKey = false
 
--- Herramientas globales disponibles en TODOS los juegos
 AdminTab:CreateSection("GET KEY PUBLIC")
 
--- Generador de Key exclusivo para el Place ID objetivo
 if game.PlaceId == TARGET_PLACE_ID then
     AdminTab:CreateSection("KEY FOR PUBLIC METHOD (In-Game Only)")
 
@@ -346,7 +380,6 @@ if game.PlaceId == TARGET_PLACE_ID then
                 Frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
                 Frame.BorderSizePixel = 0
                 Frame.Active = true
-                Frame.Draggable = true
                 Frame.Parent = ScreenGui
 
                 local Corner = Instance.new("UICorner")
@@ -437,7 +470,6 @@ AdminTab:CreateButton({
         Rayfield:Notify({ Title = "EXECUTED 💖", Content = "Slot Views executed.", Duration = 3 })
     end
 })
-
 
 AdminTab:CreateSection("Redeem Admin Panel Access (15 Mins)")
 
@@ -563,20 +595,17 @@ for _, Item in ipairs(ScriptsList) do
 end
 
 -- =============================================================
--- 10.5. AUTO-EXECUTE SAVED SCRIPTS
+-- 10.5. AUTO-EXECUTE SAVED SCRIPTS (PAUSADO CONTROLADO)
 -- =============================================================
 
 task.spawn(function()
-    -- Esperar un poco para que el juego termine de cargar
-    task.wait(3)
+    task.wait(4)
 
     for _, Item in ipairs(ScriptsList) do
         if Config[Item.ID] == true then
             print("[BunnyHub] Auto-executing: " .. Item.Name)
-
             RunScript(Item)
-
-            task.wait(1)
+            task.wait(1.5) -- Pausa ligera para no saturar la CPU
         end
     end
 
@@ -584,37 +613,38 @@ task.spawn(function()
 end)
 
 -- =============================================================
--- 11. FLOATING BUTTON FOR MOBILE
+-- 11. FLOATING BUTTON FOR MOBILE ONLY
 -- =============================================================
 
-local MobileGui = Instance.new("ScreenGui")
-MobileGui.Name = "BunnyHubMobile"
-MobileGui.ResetOnSpawn = false
-pcall(function() MobileGui.Parent = CoreGui end)
+if UserInputService.TouchEnabled then
+    local MobileGui = Instance.new("ScreenGui")
+    MobileGui.Name = "BunnyHubMobile"
+    MobileGui.ResetOnSpawn = false
+    pcall(function() MobileGui.Parent = CoreGui end)
 
-local FloatingButton = Instance.new("TextButton")
-FloatingButton.Name = "OpenHub"
-FloatingButton.Parent = MobileGui
-FloatingButton.Size = UDim2.fromOffset(58, 58)
-FloatingButton.Position = UDim2.new(1, -75, 0.5, -29)
-FloatingButton.Text = "🌸"
-FloatingButton.TextSize = 27
-FloatingButton.Font = Enum.Font.GothamBold
-FloatingButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-FloatingButton.Draggable = true
-FloatingButton.ZIndex = 999
+    local FloatingButton = Instance.new("TextButton")
+    FloatingButton.Name = "OpenHub"
+    FloatingButton.Parent = MobileGui
+    FloatingButton.Size = UDim2.fromOffset(50, 50)
+    FloatingButton.Position = UDim2.new(1, -65, 0.5, -25)
+    FloatingButton.Text = "🌸"
+    FloatingButton.TextSize = 24
+    FloatingButton.Font = Enum.Font.GothamBold
+    FloatingButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    FloatingButton.ZIndex = 999
 
-local Corner = Instance.new("UICorner")
-Corner.CornerRadius = UDim.new(1, 0)
-Corner.Parent = FloatingButton
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(1, 0)
+    Corner.Parent = FloatingButton
 
-local HubVisible = true
-FloatingButton.MouseButton1Click:Connect(function()
-    HubVisible = not HubVisible
-    pcall(function() Rayfield:SetVisibility(HubVisible) end)
-    FloatingButton.Text = HubVisible and "🌸" or "📂"
-end)
+    local HubVisible = true
+    FloatingButton.MouseButton1Click:Connect(function()
+        HubVisible = not HubVisible
+        pcall(function() Rayfield:SetVisibility(HubVisible) end)
+        FloatingButton.Text = HubVisible and "🌸" or "📂"
+    end)
+end
 
 print("==========================================")
-print("🐰 BunnyHub Loaded (Target Exclusive Tools Integrated)")
+print("🐰 BunnyHub Loaded (Optimized Version)")
 print("==========================================")

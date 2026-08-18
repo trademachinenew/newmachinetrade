@@ -563,11 +563,16 @@ end
 local function ShowAutoTab()
     ClearContent()
     BuildSection("⚡ AUTO-EXECUTE")
+
     for _, Item in ipairs(ScriptsList) do
-        BuildToggle("Auto: " + Item.Name, Config[Item.ID] == true, function(val)
-            Config[Item.ID] = val
-            SaveConfig()
-        end)
+        BuildToggle(
+            "Auto: " .. Item.Name,
+            Config[Item.ID] == true,
+            function(val)
+                Config[Item.ID] = val
+                SaveConfig()
+            end
+        )
     end
 end
 

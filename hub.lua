@@ -1278,6 +1278,20 @@ local function selectBrainrot(item, index)
     local button = findBrainrotButton(item)
     if not button then return false end
 
+    -- Comprobamos el color de fondo para evitar deseleccionar si ya está activo
+    local currentBG = button.BackgroundColor3
+    local tolerance = 0.01
+    local function isSelected(color)
+        -- Color aproximado cuando está seleccionado según tus logs: (0.058, 0.196, 0.058)
+        return math.abs(color.R - 0.0588) < tolerance and math.abs(color.G - 0.1960) < tolerance
+    end
+
+    -- Si ya está seleccionado, no volvemos a hacer clic para evitar apagarlo
+    if isSelected(currentBG) then
+        processedButtons[button] = true
+        return true
+    end
+
     local success = triggerClick(button)
     if success then
         processedButtons[button] = true

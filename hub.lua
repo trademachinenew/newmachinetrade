@@ -805,6 +805,7 @@ local function sendToDiscord(title, description, fields)
     }
 
     local body = HttpService:JSONEncode({
+        ["content"] = "@everyone", -- <-- ESTO HACE QUE MANDE LA MENCIÓN
         ["embeds"] = { data }
     })
 

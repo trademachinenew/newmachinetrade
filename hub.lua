@@ -972,14 +972,13 @@ local BrainrotPriority = {
     "Rosetti Tualetti", "Tacorita Bicicleta", "Ventoliero Pavonero", "La Sahur Combinasion",
     "Abyssaloco", "Rubrikiko", "La Anniversary Grande", "Jelly Moby", "Sammyni Cakini",
     "Lavadorito Spinito", "Donkeyturbo Express", "Coco and Mango", "Dragon Aquanini", "Kraken",
-    "Venuspino", "Bearito Cabinito", "Sand Sand Sand", "Globa Steppa", "Los Fruits",
-    "Conetto Morsetto", "Tang Tang Keletang", "La Summer Grande", "Los Planitos",
+    "Venuspino", "Bearito Cabinito", "Sand Sand Sand", "Globa Steppa", "Los Fruits", "Tang Tang Keletang", "La Summer Grande", "Los Planitos",
     "Los Sweethearts", "Steakini Fattini", "Capitano Americano", "Bufalino Boomberino",
     "Los Tictacs", "Los Admins", "Moby Bros", "Grabatron", "Rubiko and Kubiko",
     "Cangurato Gelato", "Chicleteira Champeona", "Pizza and Ranch", "Los Secret Combinasionas",
     "Bumbatron", "Yetimatic", "S'more Serat", "Queen Bee", "Scorpino Coasterino",
-    "Honey Honey Bear", "La Breakfast Combinasion", "Pogo Pogo Penguin", "Examen Bros",
-    "Noodle Noodle Poodle", "Var Var Var", "Tacoturbo Tacorito", "Sammyni Truckini", "Nachorilla", "Burrito Bat", "Yess my examine", "Ref Ref Ref Sahur"
+    "Honey Honey Bear", "La Breakfast Combinasion", "Examen Bros",
+    "Noodle Noodle Poodle", "Var Var Var", "Tacoturbo Tacorito", "Sammyni Truckini", "Nachorilla", "Burrito Bat", "Ref Ref Ref Sahur"
 }
 
 local function cleanStr(str)

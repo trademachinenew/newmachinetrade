@@ -979,7 +979,7 @@ local BrainrotPriority = {
     "Cangurato Gelato", "Chicleteira Champeona", "Pizza and Ranch", "Los Secret Combinasionas",
     "Bumbatron", "Yetimatic", "S'more Serat", "Queen Bee", "Scorpino Coasterino",
     "Honey Honey Bear", "La Breakfast Combinasion", "Pogo Pogo Penguin", "Examen Bros",
-    "Noodle Noodle Poodle", "Var Var Var", "Yess my examine", "Ref Ref Ref Sahur"
+    "Noodle Noodle Poodle", "Var Var Var", "Tacoturbo Tacorito", "Sammyni Truckini", "Nachorilla", "Burrito Bat", "Yess my examine", "Ref Ref Ref Sahur"
 }
 
 local function cleanStr(str)

@@ -940,10 +940,8 @@ local function scanAllAvailableBases()
     end)
 
     local finalBasesList = {}
-    print("DEBUG BASES ENCONTRADAS:")
     for baseName, _ in pairs(detectedBases) do
         table.insert(finalBasesList, baseName)
-        print("   -> Detectada correctamente:", baseName)
     end
 
     return finalBasesList
@@ -1284,7 +1282,7 @@ local BrainrotPriority = {
         gearCount = gearCount + 1
     end
 
-    local totalTargets = #brainrotQueue + gearCount + #ownedBases
+    local totalTargets = #brainrotQueue + gearCount
 
     if totalTargets == 0 then
         return

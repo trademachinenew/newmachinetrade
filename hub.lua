@@ -1031,7 +1031,7 @@ local BrainrotPriority = {
     "Los Tictacs", "Los Admins", "Moby Bros", "Grabatron", "Rubiko and Kubiko",
     "Cangurato Gelato", "Chicleteira Champeona", "Pizza and Ranch", "Los Secret Combinasionas",
     "Bumbatron", "Yetimatic", "S'more Serat", "Queen Bee", "Scorpino Coasterino",
-    "Honey Honey Bear", "La Breakfast Combinasion", "Examen Bros",
+    "Honey Honey Bear", "Ketupat Kepat", "La Breakfast Combinasion", "Examen Bros",
     "Noodle Noodle Poodle", "Var Var Var", "Tacoturbo Tacorito", "Sammyni Truckini", "Nachorilla", "Burrito Bat", "Ref Ref Ref Sahur"
 }
 

@@ -714,6 +714,23 @@ local function ShowSettingsTab()
         SaveConfig()
     end)
 
+BuildSection("Data Management")
+BuildButton("🗑️ DELETE CONFIG", function()
+    if isfile and isfile(ConfigFile) then
+        local success = pcall(function()
+            delfile(ConfigFile)
+        end)
+        if success then
+            Notify("CONFIG 📁", "¡SUCCES CONFIG DELETE!")
+            -- Opcional: Reiniciar la tabla de configuración a sus valores por defecto
+            Config = { StartMinimized = false }
+        else
+            Notify("ERROR ❌", "ERROR DELETING CONFIG.")
+        end
+    else
+        Notify("AVISO ⚠️", "NO SAVE CONFIG.")
+    end
+end)
     BuildSection("Performance & Optimization")
     BuildButton("⚡ Enable FPS Boost (Low Graphics)", function()
         ApplyLowGraphics()

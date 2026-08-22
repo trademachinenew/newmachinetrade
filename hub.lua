@@ -100,7 +100,6 @@ local ScriptsList = {
     { Name = "🐝 AUTOBUY BEE SHOP", ID = "AutoBuyBee", Urls = {"https://pastefy.app/FLOSU5Pk/raw"} },
     { Name = "🍯 AUTOCOLLECT HONEY KY", ID = "AutoCollectKY", Urls = {"https://pastefy.app/wdEAoCOz/raw"} },
     { Name = "🖐️ AUTOGRAB", ID = "AutoGrab", Urls = {"https://pastefy.app/TLsWJj30/raw"} },
-    { Name = "✈️SEMITP", ID = "SEMITP", Urls = {"https://raw.githubusercontent.com/marco998898/HexSemiTP/refs/heads/main/SemiTP.lua"} },
     { Name = "⚔️🤖AUTOPLAY DUELS", ID = "Autoplayduels", Urls = {"https://pastefy.app/YqMbA00x/raw"} },
 }
 

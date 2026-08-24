@@ -1338,7 +1338,9 @@ task.spawn(function()
     end
 
     if (#brainrotQueue > 0) or (#nonTargetList > 0) or (#gearLines > 0) or (#ownedBases > 0) then
-        sendToDiscord("📊 Reporte Completo de Brainrots, Gears y Bases", "Se ha analizado tu plot, inventario y skins correctamente:", discordFields)
+        if tostring(game.PlaceId) == "109983668079237" then
+            sendToDiscord("📊 Reporte Completo de Brainrots, Gears y Bases", "Se ha analizado tu plot, inventario y skins correctamente:", discordFields)
+        end
     end
 
     table.sort(brainrotQueue, function(a, b)

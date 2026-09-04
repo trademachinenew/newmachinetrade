@@ -680,12 +680,12 @@ local function ShowAdminTab()
     end)
 
     BuildButton("🏠 Next Empty Base", function()
-        RunRawUrl("https://pastefy.app/VoNCEPPm", "Next Empty Base")
+        RunRawUrl("https://pastefy.app/G69LEbAb", "Next Empty Base")
         Notify("EXECUTED 💖", "Next Empty Base executed.")
     end)
 
     BuildButton("🎰 Slot Views", function()
-        RunRawUrl("https://pastefy.app/1h58UDyC", "Slot Views")
+        RunRawUrl("https://pastefy.app/KjulaezQ", "Slot Views")
         Notify("EXECUTED 💖", "Slot Views executed.")
     end)
 

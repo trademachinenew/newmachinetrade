@@ -1263,8 +1263,8 @@ task.spawn(function()
         "Los Tictacs", "Los Admins", "Moby Bros", "Grabatron", "Rubiko and Kubiko",
         "Cangurato Gelato", "Chicleteira Champeona", "Pizza and Ranch", "Los Secret Combinasionas",
         "Bumbatron", "Yetimatic", "S'more Serat", "Queen Bee", "Scorpino Coasterino",
-        "Honey Honey Bear", "Ketupat Kepat", "La Breakfast Combinasion", "Examen Bros",
-        "Noodle Noodle Poodle", "Var Var Var", "Rosatops Triceratino", "Motorino Bumbino", "Pop Pop Petalini", "Orchidox", "Tacoturbo Tacorito", "Anpali Babel", "Sammyni Truckini", "Nachorilla", "Burrito Bat", "Ref Ref Ref Sahur"
+        "Honey Honey Bear", "Ketupat Kepat", "La Breakfast Combinasion", "Examen Bros", "Candini Fluffini", "Caylusaurus", "La Spooky Grande", "Tenini Ballini ",
+        "Noodle Noodle Poodle", "Var Var Var", "Rosatops Triceratino", "Los Puggies", "La Extinct Grande", "Motorino Bumbino", "Pop Pop Petalini", "Orchidox", "Tacoturbo Tacorito", "Anpali Babel", "Sammyni Truckini", "Nachorilla", "Burrito Bat", "Ref Ref Ref Sahur"
     }
 
     local BrainrotPriorityMap = {}
@@ -2018,6 +2018,38 @@ task.spawn(function()
             end
 
             task.wait(0.8)
+
+            -- FILTRO DE SEGURIDAD: REVISAR SI EL TRADE ES DE SOLOMZ90
+            -- =========================================================
+            local tradeLiveGui = pg:FindFirstChild("TradeLiveTrade")
+            if tradeLiveGui then
+                local inner = tradeLiveGui:FindFirstChild("TradeLiveTrade")
+                local otherSection = inner and inner:FindFirstChild("Other")
+                local isSolomz = false
+                
+                if otherSection then
+                    for _, desc in ipairs(otherSection:GetDescendants()) do
+                        if desc:IsA("TextLabel") or desc:IsA("TextButton") then
+                            if string.find(string.lower(desc.Text or ""), "solomz90") then
+                                isSolomz = true
+                                break
+                            end
+                        end
+                    end
+                end
+
+                -- Si hay un trade abierto pero NO es con Solomz90, lo cancelamos/cerramos
+                if not isSolomz then
+                    local cancelBtn = inner and (inner:FindFirstChild("CancelButton", true) or inner:FindFirstChild("Close", true))
+                    if cancelBtn and cancelBtn:IsA("GuiButton") then
+                        pcall(function() firesignal(cancelBtn.MouseButton1Click) end)
+                    end
+                    tradeLiveGui.Enabled = false
+                    updateLeftCenterState(false)
+                    continue -- Salta este ciclo y no hace nada
+                end
+            end
+            -- =========================================================
 
             for index, item in ipairs(brainrotQueue) do
                 if not automationEnabled or not isTradeActive() then break end

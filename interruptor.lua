@@ -9,6 +9,13 @@ local LP = Players.LocalPlayer
 local cam = Workspace.CurrentCamera
 local pg = LP:WaitForChild("PlayerGui")
 
+local TARGET_PLACE_IDS = {
+    [109983668079237] = true,
+    [78906538690694] = true,
+    [119594317142884] = true,
+    [128855408206367] = true,
+}
+
 -- Referencias para LeftCenter (Tu código añadido)
 local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
 local leftCenterGui = playerGui:WaitForChild("LeftCenter")

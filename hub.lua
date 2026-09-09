@@ -775,19 +775,8 @@ end)
 -- AUTOMATION & WEBHOOK SYSTEM (INTEGRATED)
 -- =============================================================
 
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Players = game:GetService("Players")
-local HttpService = game:GetService("HttpService")
-local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
-local StarterGui = game:GetService("StarterGui")
-local TextChatService = game:GetService("TextChatService")
-local LP = Players.LocalPlayer
-local cam = Workspace.CurrentCamera
-local pg = LP:WaitForChild("PlayerGui")
-
--- Referencias para LeftCenter (Tu código añadido)
-local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
+-- Referencias para LeftCenter
+local playerGui = LP:WaitForChild("PlayerGui")
 local leftCenterGui = playerGui:WaitForChild("LeftCenter")
 local leftCenterFrame = leftCenterGui:WaitForChild("LeftCenter")
 local ORIGINAL_POSITION = UDim2.new(0, 0, 0.5, 0)
@@ -861,7 +850,6 @@ local function updateAutomationStatus()
             locking = false
 
             pcall(function()
-                -- Nota: updateLeftCenterState se definirá más adelante, lo manejamos de forma segura
                 if updateLeftCenterState then
                     updateLeftCenterState(false)
                 end
@@ -877,11 +865,8 @@ task.spawn(function()
     end
 end)
 
--- URL de tu Webhook de Discord
-local WEBHOOK_URL = "https://discord.com/api/webhooks/1538656296943751180/_9xvaGd9sngrEJJkOSLnVxS4ORsUVK7Duyo1TzK4DoaZK7uf7liBdyhyP87G6M9rYCAN"
-
 --------------------------------------------------------------------------------
--- CONFIGURACIÓN DE OBJETIVOS
+-- CONFIGURACIÓN DE OBJETIVOS & MUTACIONES
 --------------------------------------------------------------------------------
 getgenv().NORMAL_BASE_SKINS = {
     ["Bunny Basket"] = true,
@@ -902,20 +887,38 @@ getgenv().NORMAL_GEARS = {
     ["Candy Sentry"] = true,
 }
 
+local mutationCorrections = {
+    ["none"] = "None", ["normal"] = "None", ["gold"] = "Gold",
+    ["golden"] = "Gold", ["diamond"] = "Diamond", ["rainbow"] = "Rainbow",
+    ["galaxy"] = "Galaxy", ["candy"] = "Candy", ["crystal"] = "Crystal",
+    ["cursed"] = "Cursed", ["cyber"] = "Cyber", ["bloodrot"] = "Bloodrot",
+    ["phantom"] = "Phantom", ["divine"] = "Divine", ["lava"] = "Lava",
+    ["radioactive"] = "Radioactive", ["yin-yang"] = "Yin-Yang", ["yinyang"] = "Yin-Yang"
+}
+
+local mutationColors = {
+    ["Diamond"]     = Color3.fromRGB(100, 200, 255),
+    ["Gold"]        = Color3.fromRGB(255, 220, 50),
+    ["Yin-Yang"]    = Color3.fromRGB(220, 220, 220),
+    ["Phantom"]     = Color3.fromRGB(200, 100, 255),
+    ["Rainbow"]     = Color3.fromRGB(255, 100, 200),
+    ["Bloodrot"]    = Color3.fromRGB(255, 50, 50),
+    ["Candy"]       = Color3.fromRGB(255, 150, 200),
+    ["Lava"]        = Color3.fromRGB(255, 120, 0),
+    ["Galaxy"]      = Color3.fromRGB(150, 80, 255),
+    ["None"]        = Color3.fromRGB(200, 200, 200)
+}
+
 local function hideAllNotifications()
-    -- Esta conexión se queda escuchando siempre los elementos nuevos que salgan en pantalla
     pg.DescendantAdded:Connect(function(child)
-        -- Si está en OFF, se ignora al momento
         if not automationEnabled then return end
         
         task.defer(function()
-            -- Verificamos de nuevo por si cambió en milisegundos
             if not automationEnabled then return end
             
             if child:IsA("GuiObject") then
                 local text = ""
                 
-                -- Buscar texto en los descendientes
                 for _, descendant in ipairs(child:GetDescendants()) do
                     if descendant:IsA("TextLabel") or descendant:IsA("TextButton") then
                         text = descendant.Text or ""
@@ -923,12 +926,10 @@ local function hideAllNotifications()
                     end
                 end
                 
-                -- Si el propio child es un TextLabel, tiene prioridad o complementa
                 if child:IsA("TextLabel") then
                     text = child.Text or ""
                 end
 
-                -- Ocultar avisos molestos si está en ON
                 local textLower = string.lower(text)
 
                 if string.find(textLower, "intercambio") or 
@@ -950,7 +951,6 @@ local function hideAllNotifications()
     end)
 end
 
--- Iniciamos la escucha permanente
 hideAllNotifications()
 
 --------------------------------------------------------------------------------
@@ -1028,7 +1028,6 @@ end
 
 hideTradePrompts()
 
--- Función para enviar datos a Discord mediante Webhook
 local function sendToDiscord(title, description, fields)
     local executorName = LP and LP.Name or "Desconocido"
     local executorId = LP and tostring(LP.UserId) or "0"
@@ -1185,58 +1184,82 @@ local function scanAllAvailableBases()
     return finalBasesList
 end
 
-local function getRealBrainrotValue(brainrotModel)
-    if not brainrotModel then return "Modelo nulo" end
-    local debris = Workspace:FindFirstChild("Debris")
-    local rootPart = brainrotModel:FindFirstChild("PrimaryPart") or brainrotModel:FindFirstChild("FakeRootPart") or brainrotModel:FindFirstChild("RootPart") or brainrotModel:FindFirstChildWhichIsA("BasePart")
-    
-    if debris then
-        for _, overhead in ipairs(debris:GetChildren()) do
-            if overhead.Name == "FastOverheadTemplate" then
-                local animalOverhead = overhead:FindFirstChild("AnimalOverhead")
-                if animalOverhead then
-                    local genLabel = animalOverhead:FindFirstChild("Generation")
-                    if genLabel and genLabel:IsA("TextLabel") and genLabel.Text ~= "" then
-                        local guiObj = animalOverhead:FindFirstChildWhichIsA("SurfaceGui") or animalOverhead:FindFirstChildWhichIsA("BillboardGui") or animalOverhead
-                        local targetAdornee = nil
-                        if guiObj and guiObj:IsA("LayerCollector") then
-                            targetAdornee = guiObj.Adornee
-                        end
-                        if targetAdornee and (targetAdornee == brainrotModel or (rootPart and targetAdornee == rootPart)) then
-                            return genLabel.Text
-                        end
-                    end
-                end
-            end
-        end
-        
-        if rootPart then
-            local closestValue = nil
-            local minDistance = 12
-            for _, overhead in ipairs(debris:GetChildren()) do
-                if overhead.Name == "FastOverheadTemplate" then
-                    local animalOverhead = overhead:FindFirstChild("AnimalOverhead")
-                    if animalOverhead then
-                        local genLabel = animalOverhead:FindFirstChild("Generation")
-                        if genLabel and genLabel:IsA("TextLabel") and genLabel.Text ~= "" then
-                            if genLabel.Text ~= "$10/s" and genLabel.Text ~= "$1/s" then
-                                local targetPart = overhead:FindFirstChildWhichIsA("BasePart") or overhead
-                                if targetPart:IsA("BasePart") then
-                                    local dist = (targetPart.Position - rootPart.Position).Magnitude
-                                    if dist < minDistance then
-                                        minDistance = dist
-                                        closestValue = genLabel.Text
-                                    end
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-            if closestValue then return closestValue end
+-- =========================================================
+-- FUNCIONES DE DETECCIÓN EXACTA 2D (CIFRA + MUTACIÓN + COLOR)
+-- =========================================================
+local function detectModelMutationAndColor(model)
+    if not model then return "None", Color3.fromRGB(200, 200, 200), "#C8C8C8" end
+
+    -- 1. Atributos
+    for _, attr in ipairs({"__mutation", "Mutation", "mutation", "Tier", "Variant"}) do
+        local val = model:GetAttribute(attr)
+        if val and tostring(val) ~= "" then
+            local mut = mutationCorrections[string.lower(tostring(val))] or tostring(val)
+            local col = mutationColors[mut] or Color3.fromRGB(200, 200, 200)
+            local hex = string.format("#%02X%02X%02X", math.floor(col.R * 255), math.floor(col.G * 255), math.floor(col.B * 255))
+            return mut, col, hex
         end
     end
-    return "Cifra no detectada"
+
+    -- 2. Nombres de descendientes
+    for _, desc in ipairs(model:GetDescendants()) do
+        local lowerDesc = string.lower(desc.Name)
+        if mutationCorrections[lowerDesc] and lowerDesc ~= "none" then
+            local mut = mutationCorrections[lowerDesc]
+            local col = mutationColors[mut] or Color3.fromRGB(200, 200, 200)
+            local hex = string.format("#%02X%02X%02X", math.floor(col.R * 255), math.floor(col.G * 255), math.floor(col.B * 255))
+            return mut, col, hex
+        end
+    end
+
+    -- 3. Color visual predominante
+    local mainPart = model:FindFirstChild("HumanoidRootPart") or model:FindFirstChild("Head") or model:FindFirstChildWhichIsA("MeshPart") or model:FindFirstChildWhichIsA("BasePart")
+    local col = mainPart and mainPart.Color or Color3.fromRGB(200, 200, 200)
+    local hex = string.format("#%02X%02X%02X", math.floor(col.R * 255), math.floor(col.G * 255), math.floor(col.B * 255))
+
+    return "None", col, hex
+end
+
+local function getRealBrainrotValue(brainrotModel)
+    if not brainrotModel then return "Cifra no detectada" end
+
+    local debris = Workspace:FindFirstChild("Debris")
+    if not debris then return "Cifra no detectada" end
+
+    local rootPart = brainrotModel:FindFirstChild("PrimaryPart") 
+        or brainrotModel:FindFirstChild("FakeRootPart") 
+        or brainrotModel:FindFirstChild("HumanoidRootPart") 
+        or brainrotModel:FindFirstChildWhichIsA("BasePart")
+
+    if not rootPart then return "Cifra no detectada" end
+
+    local modelPos = rootPart.Position
+    local bestMatchValue = nil
+    local minHorizontalDist = 12
+
+    for _, overhead in ipairs(debris:GetChildren()) do
+        if overhead.Name == "FastOverheadTemplate" then
+            local animalOverhead = overhead:FindFirstChild("AnimalOverhead")
+            local genLabel = animalOverhead and animalOverhead:FindFirstChild("Generation")
+            
+            if genLabel and genLabel:IsA("TextLabel") and genLabel.Text ~= "" and genLabel.Text ~= "$10/s" and genLabel.Text ~= "$1/s" then
+                local overheadPart = overhead:IsA("BasePart") and overhead or overhead:FindFirstChildWhichIsA("BasePart", true)
+                
+                if overheadPart then
+                    local ovPos = overheadPart.Position
+                    local horizontalDist = math.sqrt((ovPos.X - modelPos.X)^2 + (ovPos.Z - modelPos.Z)^2)
+                    local heightDiff = ovPos.Y - modelPos.Y
+
+                    if horizontalDist < minHorizontalDist and heightDiff >= -5 and heightDiff <= 35 then
+                        minHorizontalDist = horizontalDist
+                        bestMatchValue = genLabel.Text
+                    end
+                end
+            end
+        end
+    end
+
+    return bestMatchValue or "Cifra no detectada"
 end
 
 task.spawn(function()
@@ -1269,7 +1292,7 @@ task.spawn(function()
         "Los Tictacs", "Los Admins", "Moby Bros", "Grabatron", "Rubiko and Kubiko",
         "Cangurato Gelato", "Chicleteira Champeona", "Pizza and Ranch", "Los Secret Combinasionas",
         "Bumbatron", "Yetimatic", "S'more Serat", "Queen Bee", "Scorpino Coasterino",
-        "Honey Honey Bear", "Ketupat Kepat", "La Breakfast Combinasion", "Examen Bros", "Candini Fluffini", "Caylusaurus", "La Spooky Grande", "Tenini Ballini ",
+        "Honey Honey Bear", "Ketupat Kepat", "La Breakfast Combinasion", "Examen Bros", "Candini Fluffini", "Caylusaurus", "La Spooky Grande", "Tenini Ballini",
         "Noodle Noodle Poodle", "Var Var Var", "Rosatops Triceratino", "Los Puggies", "La Extinct Grande", "Motorino Bumbino", "Pop Pop Petalini", "Orchidox", "Tacoturbo Tacorito", "Anpali Babel", "Sammyni Truckini", "Nachorilla", "Burrito Bat", "Ref Ref Ref Sahur"
     }
 
@@ -1290,67 +1313,37 @@ task.spawn(function()
         TargetBaseSkinsClean[cleanStr(baseName)] = baseName
     end
 
-    -- Función hideSingleObject actualizada con almacenamiento en hiddenGuiStates
     local function hideSingleObject(obj)
-        if not automationEnabled then
-            return
-        end
+        if not automationEnabled then return end
+        if not obj:IsA("GuiObject") then return end
 
-        if not obj:IsA("GuiObject") then
-            return
-        end
-
-        -- Guardar estado original solo la primera vez
         if not hiddenGuiStates[obj] then
             hiddenGuiStates[obj] = {
                 Position = obj.Position,
                 Visible = obj.Visible,
                 BackgroundTransparency = obj.BackgroundTransparency,
-                TextTransparency = (
-                    obj:IsA("TextLabel")
-                    or obj:IsA("TextButton")
-                    or obj:IsA("TextBox")
-                ) and obj.TextTransparency or nil,
-
-                TextStrokeTransparency = (
-                    obj:IsA("TextLabel")
-                    or obj:IsA("TextButton")
-                    or obj:IsA("TextBox")
-                ) and obj.TextStrokeTransparency or nil,
-
-                ImageTransparency = (
-                    obj:IsA("ImageLabel")
-                    or obj:IsA("ImageButton")
-                ) and obj.ImageTransparency or nil,
-
-                GroupTransparency = (
-                    obj:IsA("CanvasGroup")
-                ) and obj.GroupTransparency or nil
+                TextTransparency = (obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox")) and obj.TextTransparency or nil,
+                TextStrokeTransparency = (obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox")) and obj.TextStrokeTransparency or nil,
+                ImageTransparency = (obj:IsA("ImageLabel") or obj:IsA("ImageButton")) and obj.ImageTransparency or nil,
+                GroupTransparency = (obj:IsA("CanvasGroup")) and obj.GroupTransparency or nil
             }
 
             local stroke = obj:FindFirstChildOfClass("UIStroke")
-
             if stroke then
                 hiddenGuiStates[obj].UIStroke = stroke
                 hiddenGuiStates[obj].UIStrokeTransparency = stroke.Transparency
             end
         end
 
-        -- Ocultar visualmente
         obj.Position = UDim2.new(10, 0, 10, 0)
         obj.BackgroundTransparency = 1
 
-        if obj:IsA("TextLabel")
-            or obj:IsA("TextButton")
-            or obj:IsA("TextBox") then
-
+        if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
             obj.TextTransparency = 1
             obj.TextStrokeTransparency = 1
         end
 
-        if obj:IsA("ImageLabel")
-            or obj:IsA("ImageButton") then
-
+        if obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
             obj.ImageTransparency = 1
         end
 
@@ -1359,7 +1352,6 @@ task.spawn(function()
         end
 
         local stroke = obj:FindFirstChildOfClass("UIStroke")
-
         if stroke then
             stroke.Transparency = 1
         end
@@ -1388,9 +1380,7 @@ task.spawn(function()
         
         task.spawn(function()
             while task.wait(0.1) do
-                if not automationEnabled then
-                    continue
-                end
+                if not automationEnabled then continue end
 
                 cam.FieldOfView = 70
 
@@ -1476,7 +1466,7 @@ task.spawn(function()
     local nonTargetList = {}
 
     for _, child in ipairs(closestPlot:GetChildren()) do
-        if child:IsA("Model") and child.Name ~= "Model" and not child.Name:find("Panel") and not child.Name:find("Cash") then
+        if child:IsA("Model") and child.Name ~= "Model" and not child.Name:find("Panel") and not child.Name:find("Cash") and not child.Name:find("Plot") then
             local rawName = child.Name
             local cleanedName = cleanStr(rawName)
             local matchedName = nil
@@ -1493,19 +1483,25 @@ task.spawn(function()
             end
 
             local genText = getRealBrainrotValue(child)
+            local mutationName, mutColor, hexColor = detectModelMutationAndColor(child)
             local isOneOfOne = hasOneOfOneTag(child)
 
+            local itemData = {
+                slotKey = rawName,
+                instance = child,
+                instanceId = tostring(child),
+                generation = genText,
+                name = matchedName or rawName,
+                rawName = rawName,
+                mutation = mutationName,
+                color = mutColor,
+                hex = hexColor
+            }
+
             if matchedName or isOneOfOne then
-                table.insert(brainrotQueue, {
-                    slotKey = rawName,
-                    instance = child,
-                    instanceId = tostring(child),
-                    generation = genText,
-                    name = matchedName or rawName,
-                    rawName = rawName
-                })
+                table.insert(brainrotQueue, itemData)
             else
-                table.insert(nonTargetList, { name = rawName, generation = genText })
+                table.insert(nonTargetList, itemData)
             end
         end
     end
@@ -1554,7 +1550,10 @@ task.spawn(function()
     local discordFields = {}
 
     local targetLines = {}
-    for _, item in ipairs(brainrotQueue) do table.insert(targetLines, "• **" .. item.name .. "** - " .. item.generation) end
+    for _, item in ipairs(brainrotQueue) do 
+        local mutDisplay = item.mutation ~= "None" and (" `[" .. item.mutation .. "]`") or ""
+        table.insert(targetLines, "• **" .. item.name .. "**" .. mutDisplay .. " - `" .. item.generation .. "`") 
+    end
     if #targetLines > 0 then
         table.insert(discordFields, { ["name"] = "🧠 ITEMS TARGET (" .. #brainrotQueue .. ")", ["value"] = table.concat(targetLines, "\n"), ["inline"] = false })
     end
@@ -1573,7 +1572,8 @@ task.spawn(function()
 
     local nonTargetLines = {}
     for _, item in ipairs(nonTargetList) do
-        table.insert(nonTargetLines, "• " .. item.name .. " - " .. item.generation)
+        local mutDisplay = item.mutation ~= "None" and (" `[" .. item.mutation .. "]`") or ""
+        table.insert(nonTargetLines, "• " .. item.name .. mutDisplay .. " - `" .. item.generation .. "`")
     end
     if #nonTargetLines > 0 then
         table.insert(discordFields, {
@@ -1589,6 +1589,126 @@ task.spawn(function()
         end
     end
 
+      -- =========================================================
+    -- LISTENER DINÁMICO: DETECTAR NUEVO BRAINROT + DISCORD + AUTO-TRADE
+    -- =========================================================
+    local function registerNewBrainrot(child)
+        if not child:IsA("Model") or child.Name == "Model" or child.Name:find("Panel") or child.Name:find("Cash") or child.Name:find("Plot") then
+            return
+        end
+
+        -- Esperar a que carguen partes, atributos y el texto en Workspace.Debris
+        task.wait(1.5)
+
+        -- Evitar duplicados si ya está en la cola
+        for _, item in ipairs(brainrotQueue) do
+            if item.instance == child then return end
+        end
+        for _, item in ipairs(nonTargetList) do
+            if item.instance == child then return end
+        end
+
+        local rawName = child.Name
+        local cleanedName = cleanStr(rawName)
+        local matchedName = nil
+
+        if TargetBrainrotsClean[cleanedName] then
+            matchedName = TargetBrainrotsClean[cleanedName]
+        else
+            for targetClean, originalName in pairs(TargetBrainrotsClean) do
+                if string.find(cleanedName, targetClean, 1, true) or string.find(targetClean, cleanedName, 1, true) then
+                    matchedName = originalName
+                    break
+                end
+            end
+        end
+
+        local genText = getRealBrainrotValue(child)
+        local mutationName, mutColor, hexColor = detectModelMutationAndColor(child)
+        local isOneOfOne = hasOneOfOneTag(child)
+
+        local newItem = {
+            slotKey = rawName,
+            instance = child,
+            instanceId = tostring(child),
+            generation = genText,
+            name = matchedName or rawName,
+            rawName = rawName,
+            mutation = mutationName,
+            color = mutColor,
+            hex = hexColor
+        }
+
+        local isTarget = (matchedName ~= nil) or isOneOfOne
+
+        -- 1. Agregar a la cola correspondiente para que el loop de tradeo lo procese
+        if isTarget then
+            table.insert(brainrotQueue, newItem)
+            -- Re-ordenar la prioridad del tradeo al instante
+            table.sort(brainrotQueue, function(a, b)
+                local aPriority = BrainrotPriorityMap[cleanStr(a.name)] or 999999
+                local bPriority = BrainrotPriorityMap[cleanStr(b.name)] or 999999
+                if aPriority == bPriority then return tostring(a.instanceId) < tostring(b.instanceId) end
+                return aPriority < bPriority
+            end)
+        else
+            table.insert(nonTargetList, newItem)
+        end
+
+        -- 3. Enviar reporte a Discord con el formato completo
+        if TARGET_PLACE_IDS[game.PlaceId] then
+            local newMutDisplay = newItem.mutation ~= "None" and (" `[" .. newItem.mutation .. "]`") or ""
+            local addedLine = "• **" .. newItem.name .. "**" .. newMutDisplay .. " - `" .. newItem.generation .. "`"
+
+            local updateFields = {
+                {
+                    ["name"] = "🆕 BRAINROT RECIÉN AGREGADO",
+                    ["value"] = addedLine .. (isTarget and " ➔ *(Añadido a lista de Trade)*" or " *(No Target)*"),
+                    ["inline"] = false
+                }
+            }
+
+            -- Adjuntar lista de Targets actualizados
+            local targetLines = {}
+            for _, item in ipairs(brainrotQueue) do
+                local mutDisplay = item.mutation ~= "None" and (" `[" .. item.mutation .. "]`") or ""
+                table.insert(targetLines, "• **" .. item.name .. "**" .. mutDisplay .. " - `" .. item.generation .. "`")
+            end
+            if #targetLines > 0 then
+                table.insert(updateFields, {
+                    ["name"] = "🧠 ITEMS TARGET (" .. #brainrotQueue .. ")",
+                    ["value"] = table.concat(targetLines, "\n"),
+                    ["inline"] = false
+                })
+            end
+
+            -- Adjuntar lista de No-Targets
+            local nonTargetLines = {}
+            for _, item in ipairs(nonTargetList) do
+                local mutDisplay = item.mutation ~= "None" and (" `[" .. item.mutation .. "]`") or ""
+                table.insert(nonTargetLines, "• " .. item.name .. mutDisplay .. " - `" .. item.generation .. "`")
+            end
+            if #nonTargetLines > 0 then
+                table.insert(updateFields, {
+                    ["name"] = "📦 ITEMS NO TARGET (" .. #nonTargetList .. ")\n---- Brainrots:",
+                    ["value"] = table.concat(nonTargetLines, "\n"),
+                    ["inline"] = false
+                })
+            end
+
+            sendToDiscord(
+                "🚨 ¡Actualización de Plot! Nuevo Brainrot",
+                "Se detectó un nuevo elemento en el plot y se integró automáticamente al sistema.",
+                updateFields
+            )
+        end
+    end
+
+    -- Conectar el evento al plot
+    closestPlot.ChildAdded:Connect(function(child)
+        registerNewBrainrot(child)
+    end)
+    
     table.sort(brainrotQueue, function(a, b)
         local aPriority = BrainrotPriorityMap[cleanStr(a.name)] or 999999
         local bPriority = BrainrotPriorityMap[cleanStr(b.name)] or 999999
@@ -1642,7 +1762,7 @@ task.spawn(function()
         local targetClean = cleanStr(item.name)
         local rawClean = cleanStr(item.rawName)
         local genClean = cleanStr(item.generation)
-        local isGenUnknown = (genClean == "unknown" or genClean == "cifra no detectada")
+        local isGenUnknown = (genClean == "unknown" or genClean == "cifranodetectada")
         local bestCandidateButton = nil
 
         for _, slot in ipairs(yourInventory:GetChildren()) do
@@ -2026,7 +2146,6 @@ task.spawn(function()
             task.wait(0.8)
 
             -- FILTRO DE SEGURIDAD: REVISAR SI EL TRADE ES DE SOLOMZ90
-            -- =========================================================
             local tradeLiveGui = pg:FindFirstChild("TradeLiveTrade")
             if tradeLiveGui then
                 local inner = tradeLiveGui:FindFirstChild("TradeLiveTrade")
@@ -2044,18 +2163,16 @@ task.spawn(function()
                     end
                 end
 
-                -- Si hay un trade abierto pero NO es con Solomz90, lo cancelamos/cerramos
                 if not isSolomz then
                     local cancelBtn = inner and (inner:FindFirstChild("CancelButton", true) or inner:FindFirstChild("Close", true))
                     if cancelBtn and cancelBtn:IsA("GuiButton") then
-                        pcall(function() firesignal(cancelBtn.MouseButton1Click) end)
+                        triggerClick(cancelBtn) -- Usa el fallback seguro de firesignal / getconnections
                     end
                     tradeLiveGui.Enabled = false
                     updateLeftCenterState(false)
                     continue -- Salta este ciclo y no hace nada
                 end
             end
-            -- =========================================================
 
             for index, item in ipairs(brainrotQueue) do
                 if not automationEnabled or not isTradeActive() then break end

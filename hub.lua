@@ -96,6 +96,7 @@ end)
 -- =============================================================
 
 local ScriptsList = {
+    { Name = "🎟️ CODE REDEEMER HEX", ID = "HexCode", Urls = {"https://raw.githubusercontent.com/marco998898/HexRedeemer/refs/heads/main/HexRedeemer"} },
     { Name = "🌮 AUTO TACO CHOCOLA", ID = "AutoTaco", Urls = {"https://raw.githubusercontent.com/chocolascript-glitch/Chocola-Auto-Taco/refs/heads/main/script.lua"} },
     { Name = "🎟️ CODE REDEEMER ACE", ID = "CodeRedeemer", Urls = {"https://pastefy.app/VvuMZMpR/raw"} },
     { Name = "🎟️ CODE REDEEMER TIGGY", ID = "CodeRedeemerTiggy", Urls = {"https://pastefy.app/sWmXY4yj/raw"} },

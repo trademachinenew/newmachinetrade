@@ -96,7 +96,6 @@ end)
 -- =============================================================
 
 local ScriptsList = {
-    { Name = "🎰 Autospin RNG", ID = "AutoSpinRNG", Urls = {"https://raw.githubusercontent.com/chocolascript-glitch/Chocola-Auto-Spin-RNG/refs/heads/main/script.lua"} },
     { Name = "🌮 AUTO TACO CHOCOLA", ID = "AutoTaco", Urls = {"https://raw.githubusercontent.com/chocolascript-glitch/Chocola-Auto-Taco/refs/heads/main/script.lua"} },
     { Name = "🎟️ CODE REDEEMER ACE", ID = "CodeRedeemer", Urls = {"https://pastefy.app/VvuMZMpR/raw"} },
     { Name = "🎟️ CODE REDEEMER TIGGY", ID = "CodeRedeemerTiggy", Urls = {"https://pastefy.app/sWmXY4yj/raw"} },

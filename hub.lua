@@ -25,6 +25,7 @@ local pg = LP:WaitForChild("PlayerGui")
 local TARGET_PLACE_IDS = {
     [109983668079237] = true,
     [78906538690694] = true,
+    [85621847059032] = true,
     [119594317142884] = true,
     [128855408206367] = true,
 }
@@ -576,6 +577,14 @@ local ScriptsList = {
         }
     },
 
+        {
+        Name = "🥚 EGGS LTM TELEPORT",
+        ID = "LTM",
+        Urls = {
+            "https://pastefy.app/YtpFTL2q/raw"
+        }
+    },
+    
     {
         Name = "🌮 AUTO TACO CHOCOLA",
         ID = "AutoTaco",

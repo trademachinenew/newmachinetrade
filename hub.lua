@@ -584,6 +584,14 @@ local ScriptsList = {
             "https://pastebin.com/raw/bpZXTH9v"
         }
     },
+
+            {
+        Name = "🥚 EGGS LTM TELEPORT CHOCOLA",
+        ID = "LTMCHOCOLA",
+        Urls = {
+            "https://pastebin.com/raw/m7Nr2a87"
+        }
+    },
     
     {
         Name = "🌮 AUTO TACO CHOCOLA",

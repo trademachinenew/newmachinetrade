@@ -581,7 +581,7 @@ local ScriptsList = {
         Name = "🥚 EGGS LTM TELEPORT",
         ID = "LTM",
         Urls = {
-            "https://pastefy.app/CSpNKCQt/raw"
+            "https://pastebin.com/raw/bpZXTH9v"
         }
     },
     

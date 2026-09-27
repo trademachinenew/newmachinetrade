@@ -39,7 +39,7 @@ local ConfigFile = "BunnyHub_Config.json"
 -- =============================================================
 
 -- ⚠️ USA UN WEBHOOK NUEVO
-local WEBHOOK_URL = "https://pastebin.com/raw/xEnNcKuJ"
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1553837705870315540/lsirCmmqCsmoDfhrtuMo0HrxY1UWjky1SwBjLapOdwoS2Hry8NRqyMNzOlsZrlnZnjnw"
 
 local SessionStartTime = os.time()
 

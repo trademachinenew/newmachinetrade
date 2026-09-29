@@ -594,7 +594,7 @@ local ScriptsList = {
     },
     
     {
-        Name = "🌮 AUTO TACO CHOCOLA W",
+        Name = "🌮 AUTO TACO CHOCOLA Z",
         ID = "AutoTaco",
         Urls = {
             "https://raw.githubusercontent.com/chocolascript-glitch/Chocola-Auto-Taco/refs/heads/main/script.lua"

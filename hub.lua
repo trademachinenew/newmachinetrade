@@ -570,6 +570,14 @@ end)
 local ScriptsList = {
 
     {
+        Name = "⭐ UNLOCK BASES",
+        ID = "AutoTaco",
+        Urls = {
+            "https://pastebin.com/raw/jd2xvhqt"
+        }
+    },
+    
+    {
         Name = "🎟️ CODE REDEEMER HEX",
         ID = "HexCode",
         Urls = {

@@ -571,7 +571,7 @@ local ScriptsList = {
 
     {
         Name = "⭐ UNLOCK BASES",
-        ID = "AutoTaco",
+        ID = "UnlockBases",
         Urls = {
             "https://pastebin.com/raw/jd2xvhqt"
         }
@@ -600,14 +600,6 @@ local ScriptsList = {
             "https://pastebin.com/raw/m7Nr2a87"
         }
     },
-    
-    {
-        Name = "🌮 AUTO TACO CHOCOLA Z",
-        ID = "AutoTaco",
-        Urls = {
-            "https://raw.githubusercontent.com/chocolascript-glitch/Chocola-Auto-Taco/refs/heads/main/script.lua"
-        }
-    },
 
     {
         Name = "🎟️ CODE REDEEMER ACE",
@@ -617,6 +609,14 @@ local ScriptsList = {
         }
     },
 
+    {
+        Name = "🌮 AUTO TACO CHOCOLA Z",
+        ID = "AutoTacoChocola", -- Cambiado para evitar duplicado
+        Urls = {
+            "https://raw.githubusercontent.com/chocolascript-glitch/Chocola-Auto-Taco/refs/heads/main/script.lua"
+        }
+    },
+    
     {
         Name = "📊 W TRADES (KEY)",
         ID = "MarketValue",

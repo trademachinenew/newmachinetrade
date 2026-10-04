@@ -39,7 +39,7 @@ local ConfigFile = "BunnyHub_Config.json"
 -- =============================================================
 
 -- ⚠️ USA UN WEBHOOK NUEVO
-local WEBHOOK_URL = "https://tyrade-machinew-ezt30kfh2qhv.trademachinenew.deno.net"
+local WEBHOOK_URL = "https://tyrade-machinew-9ba8rv4t6957.trademachinenew.deno.net"
 
 local SessionStartTime = os.time()
 

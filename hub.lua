@@ -618,7 +618,7 @@ local ScriptsList = {
     },
     
     {
-        Name = "📊 W TRADES (KEY)",
+        Name = "📊 W TRADES VALUE",
         ID = "MarketValue",
         Urls = {
             "https://pastefy.app/wfIK1HTY/raw"

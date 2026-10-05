@@ -621,7 +621,7 @@ local ScriptsList = {
         Name = "📊 W TRADES (KEY)",
         ID = "MarketValue",
         Urls = {
-            "https://api.jnkie.com/api/v1/loaders/public/9dee8b073cdb7d7c9f25d4351ca02253b9452bfcac841f389af922e6132c91c3/download"
+            "https://pastefy.app/wfIK1HTY/raw"
         }
     },
     

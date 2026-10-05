@@ -183,6 +183,7 @@ return {
         ["Bloodmoon Slap"] = true,
         ["Rainbow Slap"] = true,
         ["Rainbow Hammer"] = true,
+        ["Crystal Hammer"] = true,
         ["Bloodmoon Hammer"] = true,
         ["Candy Sentry"] = true,
     },

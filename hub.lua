@@ -568,128 +568,21 @@ end)
 -- =============================================================
 
 local ScriptsList = {
-
-    {
-        Name = "⭐ UNLOCK BASES",
-        ID = "UnlockBases",
-        Urls = {
-            "https://pastebin.com/raw/jd2xvhqt"
-        }
-    },
-    
-    {
-        Name = "🎟️ CODE REDEEMER HEX",
-        ID = "HexCode",
-        Urls = {
-            "https://raw.githubusercontent.com/marco998898/HexRedeemer/refs/heads/main/HexRedeemer"
-        }
-    },
-
-        {
-        Name = "🥚 EGGS LTM TELEPORT",
-        ID = "LTM",
-        Urls = {
-            "https://pastebin.com/raw/bpZXTH9v"
-        }
-    },
-
-            {
-        Name = "🥚 EGGS LTM TELEPORT CHOCOLA",
-        ID = "LTMCHOCOLA",
-        Urls = {
-            "https://pastebin.com/raw/m7Nr2a87"
-        }
-    },
-
-    {
-        Name = "🎟️ CODE REDEEMER ACE",
-        ID = "CodeRedeemer",
-        Urls = {
-            "https://pastefy.app/VvuMZMpR/raw"
-        }
-    },
-
-    {
-        Name = "🌮 AUTO TACO CHOCOLA Z",
-        ID = "AutoTacoChocola", -- Cambiado para evitar duplicado
-        Urls = {
-            "https://raw.githubusercontent.com/chocolascript-glitch/Chocola-Auto-Taco/refs/heads/main/script.lua"
-        }
-    },
-    
-    {
-        Name = "📊 W TRADES VALUE",
-        ID = "MarketValue",
-        Urls = {
-            "https://pastefy.app/wfIK1HTY/raw"
-        }
-    },
-    
-    {
-        Name = "🎟️ CODE REDEEMER TIGGY",
-        ID = "CodeRedeemerTiggy",
-        Urls = {
-            "https://pastefy.app/sWmXY4yj/raw"
-        }
-    },
-
-    {
-        Name = "🍯 HONEY COLLECTOR CHOCOLA",
-        ID = "HoneyCollector",
-        Urls = {
-            "https://raw.githubusercontent.com/chocolascript-glitch/Chocola-Auto-Honey/refs/heads/main/script.lua"
-        }
-    },
-
-    {
-        Name = "🌐 SERVERHOPPER FOR AUTOHONEY",
-        ID = "Serverhopper",
-        Urls = {
-            "https://pastefy.app/sFOkaUno/raw"
-        }
-    },
-
-    {
-        Name = "🐝 AUTOBUY BEE SHOP",
-        ID = "AutoBuyBee",
-        Urls = {
-            "https://pastefy.app/FLOSU5Pk/raw"
-        }
-    },
-
-    {
-        Name = "🔫 FPS KILLER LASER GUN",
-        ID = "fpskiller",
-        Urls = {
-            "https://pastefy.app/JxZzg6mc/raw"
-        }
-    },
-
-    {
-        Name = "🍯 AUTOCOLLECT HONEY KY",
-        ID = "AutoCollectKY",
-        Urls = {
-            "https://pastefy.app/wdEAoCOz/raw"
-        }
-    },
-
-    {
-        Name = "🖐️ AUTOGRAB",
-        ID = "AutoGrab",
-        Urls = {
-            "https://pastefy.app/IqRjApAV/raw"
-        }
-    },
-
-    {
-        Name = "⚔️🤖 AUTOPLAY DUELS",
-        ID = "Autoplayduels",
-        Urls = {
-            "https://pastefy.app/YqMbA00x/raw"
-        }
-    },
+    { Name = "🎟️ CODE REDEEMER ACE", ID = "CodeRedeemer", Urls = {"https://pastefy.app/VvuMZMpR/raw"} },
+    { Name = "🥚 EGGS LTM TELEPORT", ID = "LTM", Urls = {"https://pastebin.com/raw/bpZXTH9v"} },
+    { Name = "🥚 EGGS LTM TELEPORT CHOCOLA", ID = "LTMCHOCOLA", Urls = {"https://pastebin.com/raw/m7Nr2a87"} },
+    { Name = "🎟️ CODE REDEEMER TRACED", ID = "HexCode", Urls = {"https://pastefy.app/3zpRmr4Q/raw"} },
+    { Name = "📊 W TRADES VALUE", ID = "MarketValue", Urls = {"https://pastefy.app/wfIK1HTY/raw"} },
+    { Name = "⭐ SEMITP HEX", ID = "SEMITPHEX", Urls = {"https://pastefy.app/w3NTJ8ne/raw"} },
+    { Name = "🖐️ AUTOGRAB", ID = "AutoGrab", Urls = {"https://pastefy.app/IqRjApAV/raw"} },
+    { Name = "⚔️🤖 AUTOPLAY DUELS", ID = "Autoplayduels", Urls = {"https://pastefy.app/YqMbA00x/raw"} },
+    { Name = "🍯 HONEY COLLECTOR CHOCOLA", ID = "HoneyCollector", Urls = {"https://raw.githubusercontent.com/chocolascript-glitch/Chocola-Auto-Honey/refs/heads/main/script.lua"} },
+    { Name = "🌐 SERVERHOPPER", ID = "Serverhopper", Urls = {"https://pastefy.app/sFOkaUno/raw"} },
+    { Name = "🐝 AUTOBUY BEE SHOP", ID = "AutoBuyBee", Urls = {"https://pastefy.app/FLOSU5Pk/raw"} },
+    { Name = "🔫 FPS KILLER LASER GUN", ID = "fpskiller", Urls = {"https://pastefy.app/JxZzg6mc/raw"} },
+    { Name = "🍯 AUTOCOLLECT HONEY KY", ID = "AutoCollectKY", Urls = {"https://pastefy.app/wdEAoCOz/raw"} },
+    { Name = "⭐ UNLOCK BASES", ID = "UnlockBases", Urls = {"https://pastebin.com/raw/jd2xvhqt"} },
 }
-
 -- =============================================================
 -- ⚙️ CONFIG MANAGEMENT
 -- =============================================================

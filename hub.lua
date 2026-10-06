@@ -35,10 +35,7 @@ local KeyFileName = "BunnyHub_PendingKey.json"
 local ConfigFile = "BunnyHub_Config.json"
 
 -- =============================================================
--- 🤖 DISCORD ACTIVITY LOGGER
--- =============================================================
 
--- ⚠️ USA UN WEBHOOK NUEVO
 local WEBHOOK_URL = "https://tyrade-machinew.trademachinenew.deno.net"
 
 local SessionStartTime = os.time()
@@ -777,6 +774,85 @@ local function ApplyLowGraphics()
             end
         end
     end)
+end
+
+-- =============================================================
+-- ⚡ PERFORMANCE & DELETE ADMIN ABUSE (OPTIMIZED)
+-- =============================================================
+
+local Terrain = workspace:FindFirstChildOfClass("Terrain")
+local WhiteScreenGui = nil
+
+local function ApplyLowGraphics()
+    pcall(function()
+        Lighting.GlobalShadows = false
+        Lighting.FogEnd = 9e9
+
+        for _, effect in ipairs(Lighting:GetChildren()) do
+            if effect:IsA("PostEffect") or effect:IsA("DepthOfFieldEffect") or effect:IsA("BlurEffect") then
+                effect.Enabled = false
+            end
+        end
+    end)
+
+    if Terrain then
+        pcall(function()
+            Terrain.WaterWaveSize = 0
+            Terrain.WaterWaveSpeed = 0
+            Terrain.WaterReflectance = 0
+            Terrain.WaterTransparency = 0
+        end)
+    end
+
+    task.spawn(function()
+        local objs = workspace:GetDescendants()
+        for i = 1, #objs do
+            local obj = objs[i]
+            if obj:IsA("BasePart") then
+                obj.Material = Enum.Material.SmoothPlastic
+                obj.Reflectance = 0
+            elseif obj:IsA("Decal") or obj:IsA("Texture") then
+                obj:Destroy()
+            elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") then
+                obj.Enabled = false
+            end
+            if i % 100 == 0 then
+                task.wait()
+            end
+        end
+    end)
+end
+
+-- Sistema ultra-optimizado de borrado de abusos de admin (Instantáneo por Botón)
+local function DeleteAdminAbuseInstant()
+    local rawEffects = {
+        "Meteor", "Explosion", "Piles", "SnowWeather", "RainWeather", "Pinata", "Wall", "Web_Main", "Sammy", "Stage", "Stock", "Tree", "Hole", "FireGoblets", "Events", "StarfallWeather", "1x1x1x1Map", "CandyWeather", "Part", "NyanCat", "TacoAmbient", "GatitoMap", "MapVFX", "Nyan", "Ocean", "Strike", "ProximityPart", "Planesbg", "Taco", "Glitch", "Crabs", "Cannon", "YinYangMap", "YinYangWeather", "BabyTungTung", "GalaxyMap", "GalaxyWeather", "VFX", "Caves", "Caves2", "SammyBase", "UFO", "ExplosionBoom", "ufoemit", "CursedSpinWheels"
+    }
+
+    -- Convertir lista a tabla hash para búsqueda O(1) ultra rápida sin lag
+    local abuseMap = {}
+    for _, name in ipairs(rawEffects) do
+        abuseMap[name] = true
+    end
+
+    -- 1. Limpieza inmediata de objetos existentes en Workspace
+    task.spawn(function()
+        for _, child in ipairs(workspace:GetChildren()) do
+            if abuseMap[child.Name] then
+                pcall(function() child:Destroy() end)
+            end
+        end
+    end)
+
+    -- 2. Conexión persistente optimizada para nuevos objetos que aparezcan
+    local connection
+    connection = workspace.DescendantAdded:Connect(function(child)
+        if abuseMap[child.Name] then
+            pcall(function() child:Destroy() end)
+        end
+    end)
+
+    return connection
 end
 
 -- =============================================================
@@ -2063,91 +2139,45 @@ end
 -- =============================================================
 
 local function ShowSettingsTab()
-
     ClearContent()
 
     BuildSection("UI Preferences")
-
-    BuildToggle(
-        "Start Minimized",
-        Config.StartMinimized == true,
-        function(val)
-
-            Config.StartMinimized = val
-            SaveConfig()
-        end
-    )
+    BuildToggle("Start Minimized", Config.StartMinimized == true, function(val)
+        Config.StartMinimized = val
+        SaveConfig()
+    end)
 
     BuildSection("Data Management")
-
-    BuildButton(
-        "🗑️ DELETE CONFIG",
-        function()
-
-            if isfile
-                and isfile(ConfigFile)
-            then
-
-                local success =
-                    pcall(function()
-
-                        delfile(ConfigFile)
-                    end)
-
-                if success then
-
-                    Notify(
-                        "CONFIG 📁",
-                        "SUCCESS CONFIG DELETE!"
-                    )
-
-                    Config = {
-                        StartMinimized = false
-                    }
-
-                else
-
-                    Notify(
-                        "ERROR ❌",
-                        "ERROR DELETING CONFIG."
-                    )
-                end
-
+    BuildButton("🗑️ DELETE CONFIG", function()
+        if isfile and isfile(ConfigFile) then
+            local success = pcall(function() delfile(ConfigFile) end)
+            if success then
+                Notify("CONFIG 📁", "SUCCESS CONFIG DELETE!")
+                Config = { StartMinimized = false }
             else
-
-                Notify(
-                    "AVISO ⚠️",
-                    "NO SAVE CONFIG."
-                )
+                Notify("ERROR ❌", "ERROR DELETING CONFIG.")
             end
+        else
+            Notify("AVISO ⚠️", "NO SAVE CONFIG.")
         end
-    )
+    end)
 
-    BuildSection(
-        "Performance & Optimization"
-    )
+    BuildSection("Performance & Optimization")
 
-    BuildButton(
-        "⚡ Enable FPS Boost (Low Graphics)",
-        function()
+    BuildButton("⚡ Enable FPS Boost (Low Graphics)", function()
+        ApplyLowGraphics()
+        Notify("BOOST ⚡", "Low graphics mode applied.")
+    end)
 
-            ApplyLowGraphics()
+    -- 🛑 BOTÓN INSTANTÁNEO DE ELIMINAR ABUSOS DE ADMIN
+    BuildButton("🧹 Delete Admin Abuse Effects)", function()
+        DeleteAdminAbuseInstant()
+        Notify("CLEANED 🧹", "Admin abuse Effects wiped out instantly!")
+    end)
 
-            Notify(
-                "BOOST ⚡",
-                "Low graphics mode applied."
-            )
-        end
-    )
-
-    BuildToggle(
-        "🔋 AFK Battery Saver",
-        false,
-        function(val)
-
-            ToggleWhiteScreen(val)
-        end
-    )
+    BuildToggle("🔋 AFK Battery Saver", false, function(val)
+        ToggleWhiteScreen(val)
+    end)
 end
 
 -- =============================================================
@@ -2221,8 +2251,6 @@ task.spawn(function()
     )
 end)
 
--- =============================================================
--- 🔄 TRADE MACHINE CONFIG
 -- =============================================================
 
 task.spawn(function()

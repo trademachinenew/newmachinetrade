@@ -1750,6 +1750,206 @@ local function BuildInput(
 end
 
 -- =============================================================
+ 
+-- { nombre, fondo, acento, color de toggle ON, modo claro? }
+local ThemeDefs = {
+    { "🌸 Bunny Pink",   "181820", "FFB6C1", "50C878" },
+    { "🥝 Kiwi Green",   "0B1A11", "A0E65A", "6EE696" },
+    { "🌙 Midnight",     "0D1020", "7C9CFF", "4ADE80" },
+    { "⚫ OLED Black",   "000000", "FFFFFF", "22C55E" },
+    { "🌊 Ocean",        "071A24", "38BDF8", "2DD4BF" },
+    { "🌅 Sunset",       "1F1020", "FF8A5B", "FFC857" },
+    { "💜 Lavender",     "1A1426", "C4A1FF", "9AE6B4" },
+    { "🍒 Cherry",       "1E0A10", "FF4D6D", "FF9E7A" },
+    { "🍬 Candy",        "22101F", "FF7EB6", "7EE8FA" },
+    { "🪙 Gold",         "14120A", "FFD166", "C5E063" },
+    { "🤖 Cyberpunk",    "0B0714", "00F5D4", "FF2E97" },
+    { "🍵 Matcha",       "121A12", "B5D99C", "8BC34A" },
+    { "🌌 Galaxy",       "0A0A1F", "B388FF", "64B5F6" },
+    { "🧛 Dracula",      "282A36", "BD93F9", "50FA7B" },
+    { "❄️ Nord",         "2E3440", "88C0D0", "A3BE8C" },
+    { "🌹 Rose Gold",    "1C1416", "E8B4B8", "F4C2A1" },
+    { "🔥 Lava",         "1A0A06", "FF5722", "FFC107" },
+    { "☀️ Light",        "EDEDF2", "D6336C", "2F9E5B", true },
+    { "🌈 Rainbow",      "0E0E14", "FFFFFF", "4ADE80" }, -- acento animado
+}
+ 
+-- Genera la paleta completa a partir de 3 colores
+local function buildPalette(bgHex, accHex, onHex, light)
+    local bg = Color3.fromHex(bgHex)
+    local acc = Color3.fromHex(accHex)
+    local on = Color3.fromHex(onHex)
+    local W, K = Color3.new(1, 1, 1), Color3.new(0, 0, 0)
+    local toward = light and K or W
+    local away = light and W or K
+    return {
+        Bg     = bg,
+        Header = bg:Lerp(toward, 0.04),
+        Side   = bg:Lerp(away, 0.15),
+        Card   = bg:Lerp(toward, 0.06),
+        Tab    = bg:Lerp(toward, 0.045),
+        Off    = bg:Lerp(toward, 0.22),
+        On     = on,
+        Accent = acc,
+        Text   = light and Color3.fromRGB(30, 30, 40) or Color3.fromRGB(240, 240, 240),
+        Sub    = light and Color3.fromRGB(80, 80, 95) or Color3.fromRGB(200, 200, 200),
+        Hi     = light and Color3.fromRGB(20, 20, 28) or Color3.fromRGB(255, 255, 255),
+    }
+end
+ 
+-- Colores ORIGINALES del hub -> rol (asi no hay que editar el resto del script)
+local function k3(c)
+    return math.floor(c.R * 255 + 0.5) * 65536
+        + math.floor(c.G * 255 + 0.5) * 256
+        + math.floor(c.B * 255 + 0.5)
+end
+local BASE = {
+    [k3(Color3.fromRGB(24, 24, 30))]    = "Bg",
+    [k3(Color3.fromRGB(30, 30, 38))]    = "Header",
+    [k3(Color3.fromRGB(20, 20, 26))]    = "Side",
+    [k3(Color3.fromRGB(35, 35, 45))]    = "Card",
+    [k3(Color3.fromRGB(30, 30, 40))]    = "Tab",
+    [k3(Color3.fromRGB(70, 70, 80))]    = "Off",
+    [k3(Color3.fromRGB(80, 200, 120))]  = "On",
+    [k3(Color3.fromRGB(255, 182, 193))] = "Accent",
+    [k3(Color3.fromRGB(240, 240, 240))] = "Text",
+    [k3(Color3.fromRGB(200, 200, 200))] = "Sub",
+    [k3(Color3.fromRGB(220, 220, 220))] = "Sub",
+    [k3(Color3.fromRGB(255, 255, 255))] = "Hi",
+}
+local PROPS = { "BackgroundColor3", "TextColor3", "ScrollBarImageColor3" }
+ 
+local Current = buildPalette(ThemeDefs[1][2], ThemeDefs[1][3], ThemeDefs[1][4], ThemeDefs[1][5])
+local roles = setmetatable({}, { __mode = "k" })   -- inst -> { prop = rol }
+local applied = setmetatable({}, { __mode = "k" }) -- inst -> { prop = color aplicado por nosotros }
+local hooked = setmetatable({}, { __mode = "k" })
+local rainbowToken = 0
+ 
+local function paint(inst, prop, role)
+    local col = Current and Current[role]
+    if not col then return end
+    applied[inst] = applied[inst] or {}
+    applied[inst][prop] = col
+    pcall(function() inst[prop] = col end)
+end
+ 
+local function register(inst)
+    for _, prop in ipairs(PROPS) do
+        local ok, val = pcall(function() return inst[prop] end)
+        if ok and typeof(val) == "Color3" then
+            local role = BASE[k3(val)]
+            if role then
+                roles[inst] = roles[inst] or {}
+                roles[inst][prop] = role
+                paint(inst, prop, role)
+ 
+                hooked[inst] = hooked[inst] or {}
+                if not hooked[inst][prop] then
+                    hooked[inst][prop] = true
+                    -- si el script le pone un color original (ej. toggle ON/OFF), lo re-tematizamos
+                    inst:GetPropertyChangedSignal(prop):Connect(function()
+                        local now = inst[prop]
+                        local a = applied[inst] and applied[inst][prop]
+                        if a and a == now then return end
+                        local r = BASE[k3(now)]
+                        if r then
+                            roles[inst][prop] = r
+                            paint(inst, prop, r)
+                        end
+                    end)
+                end
+            end
+        end
+    end
+end
+ 
+local function repaintAll(onlyRole)
+    for inst, map in pairs(roles) do
+        if inst.Parent then
+            for prop, role in pairs(map) do
+                if not onlyRole or role == onlyRole then
+                    paint(inst, prop, role)
+                end
+            end
+        end
+    end
+end
+ 
+local function findDef(name)
+    for _, d in ipairs(ThemeDefs) do
+        if d[1] == name then return d end
+    end
+end
+ 
+local function SetTheme(name, silent)
+    local def = findDef(name)
+ 
+    if name == "🎲 Random" then
+        def = ThemeDefs[math.random(#ThemeDefs)]
+    elseif name == "🎨 Custom" then
+        local hex = (tostring(Config.CustomAccent or ""):gsub("[#%s]", ""))
+        if not pcall(Color3.fromHex, hex) then
+            Notify("THEME ❌", "HEX invalido. Ej: FF77AA")
+            return
+        end
+        def = { name, "14141C", hex, "4ADE80" }
+    end
+    def = def or ThemeDefs[1]
+ 
+    Current = buildPalette(def[2], def[3], def[4], def[5])
+    repaintAll()
+ 
+    -- Rainbow: el acento va cambiando de color
+    rainbowToken = rainbowToken + 1
+    local myToken = rainbowToken
+    if def[1] == "🌈 Rainbow" then
+        task.spawn(function()
+            while myToken == rainbowToken and ScreenGui and ScreenGui.Parent do
+                Current.Accent = Color3.fromHSV((os.clock() * 0.12) % 1, 0.45, 1)
+                repaintAll("Accent")
+                task.wait(0.1)
+            end
+        end)
+    end
+ 
+    if not silent then
+        Config.Theme = name
+        SaveConfig()
+        Notify("THEME 🎨", def[1])
+    end
+end
+ 
+-- Registrar lo que ya existe y lo que se cree despues
+for _, d in ipairs(ScreenGui:GetDescendants()) do
+    register(d)
+end
+ScreenGui.DescendantAdded:Connect(function(d)
+    task.defer(register, d)
+end)
+ 
+-- Aplicar el tema guardado en la config
+SetTheme(Config.Theme or ThemeDefs[1][1], true)
+ 
+-- Seccion para el tab de Settings
+function BuildThemeSection()
+    BuildSection("🎨 Themes (" .. #ThemeDefs .. " + random + custom)")
+ 
+    BuildButton("🎲 Random", function()
+        SetTheme("🎲 Random")
+    end)
+ 
+    for _, d in ipairs(ThemeDefs) do
+        BuildButton(d[1], function()
+            SetTheme(d[1])
+        end)
+    end
+ 
+    BuildInput("🎨 Custom: HEX del acento (ej FF77AA) + Enter", function(text)
+        Config.CustomAccent = text
+        SetTheme("🎨 Custom")
+    end)
+end
+-- =============================================================
 -- 📜 SCRIPTS TAB
 -- =============================================================
 
@@ -2180,6 +2380,8 @@ local function ShowSettingsTab()
         end
     end)
 
+    BuildThemeSection()
+                
     BuildSection("Performance & Optimization")
 
     BuildButton("⚡ Enable FPS Boost (Low Graphics)", function()

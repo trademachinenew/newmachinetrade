@@ -49,7 +49,7 @@ local TARGET_PLACE_IDS = {
     [128855408206367] = true,
 }
 
-local BASE_URL = "https://pastebin.com/hesvtBJX"
+local BASE_URL = "https://pastebin.com/raw/hesvtBJX"
 local KeyFileName = "BunnyHub_PendingKey.json"
 local ConfigFile = "BunnyHub_Config.json"
 

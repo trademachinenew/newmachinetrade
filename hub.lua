@@ -581,7 +581,7 @@ local ScriptsList = {
     { Name = "🎟️ CODE REDEEMER ACE", ID = "CodeRedeemer", Urls = {"https://pastefy.app/VvuMZMpR/raw"} },
     { Name = "🎟️ CODE REDEEMER TRACED RISK/RIESGO", ID = "HexCode", Urls = {"https://raw.githubusercontent.com/bunnysabscript/bunnyhub/refs/heads/main/codetraced"} },
     { Name = "🥚 EGGS LTM TELEPORT", ID = "LTM", Urls = {"https://pastebin.com/raw/bpZXTH9v"} },
-    { Name = "🥚 EGGS LTM TELEPORT CHOCOLA", ID = "LTMCHOCOLA", Urls = {"https://pastebin.com/raw/m7Nr2a87"} },
+    { Name = "🥚 EGGS LTM TELEPORT CHOCOLA", ID = "LTMCHOCOLA", Urls = {"https://raw.githubusercontent.com/bunnysabscript/bunnyhub/refs/heads/main/eggsltm"} },
     { Name = "⭐ SEMITP ICOLLECT PRO", ID = "SEMITPHEX1", Urls = {"https://raw.githubusercontent.com/bunnysabscript/bunnyhub/refs/heads/main/semitp"} },
     { Name = "⭐ SEMITP HEX", ID = "SEMITPHEX", Urls = {"https://pastefy.app/w3NTJ8ne/raw"} },
     { Name = "⭐ 1 OF 1", ID = "1OF1", Urls = {"https://raw.githubusercontent.com/bunnysabscript/bunnyhub/refs/heads/main/1of1"} },

@@ -2,15 +2,8 @@
 -- 🐰 BUNNY HUB ALL-IN-ONE
 -- NATIVE ULTRA-LIGHT UI + AUTOMATION 
 -- =============================================================
-local jobKey = tostring(game.JobId ~= "" and game.JobId or game.PlaceId)
-
-local alreadyUI = false
-pcall(function()
-    alreadyUI = game:GetService("CoreGui"):FindFirstChild("BunnyHub_NativeUI") ~= nil
-end)
-
-if getgenv().BunnyHubLoadedJob == jobKey or alreadyUI then
-    warn("[BunnyHub] Ya está ejecutado en esta sesión.")
+if getgenv().BunnyHubLoaded then
+    warn("[BunnyHub] Ya se ha ejecutado).")
     pcall(function()
         game:GetService("StarterGui"):SetCore("SendNotification", {
             Title = "BunnyHub 🌸",
@@ -20,7 +13,7 @@ if getgenv().BunnyHubLoadedJob == jobKey or alreadyUI then
     end)
     return
 end
-getgenv().BunnyHubLoadedJob = jobKey
+getgenv().BunnyHubLoaded = true
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")

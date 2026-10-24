@@ -52,10 +52,10 @@ local function FormatBrainrotName(name, mut, gen)
                     prefix = "⭐"
                     tier = 2
                 elseif i <= 100 then
-                    prefix = "✨"
+                    prefix = "⭐"
                     tier = 1
                 elseif i <= 150 then
-                    prefix = "🔹"
+                    prefix = "⭐"
                     tier = 1
                 else
                     prefix = "▪️"

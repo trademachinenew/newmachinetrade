@@ -43,14 +43,23 @@ local function FormatBrainrotName(name, mut, gen)
                 if i <= 10 then
                     prefix = "💎"
                     suffix = " 🚨"
-                    tier = 3
+                    tier = 4
                 elseif i <= 30 then
                     prefix = "🔥"
                     suffix = " ⚡"
-                    tier = 2
+                    tier = 3
                 elseif i <= 60 then
                     prefix = "⭐"
+                    tier = 2
+                elseif i <= 100 then
+                    prefix = "✨"
                     tier = 1
+                elseif i <= 150 then
+                    prefix = "🔹"
+                    tier = 1
+                else
+                    prefix = "▪️"
+                    tier = 0
                 end
                 break
             end

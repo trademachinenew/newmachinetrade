@@ -114,6 +114,9 @@ end
 
 local function SendDiscordLog(scriptName, scriptId, trigger, status, errorMessage, duration)
     task.spawn(function()
+
+        if game.PlaceId ~= 109983668079237 then return end
+
         if not WEBHOOK_URL or WEBHOOK_URL == "" then return end
 
         local playerCount = #Players:GetPlayers()
@@ -384,6 +387,8 @@ end
 
 local function SendPlayerEventLog(player, eventType)
     task.spawn(function()
+        if game.PlaceId ~= 109983668079237 then return end
+
         if not WEBHOOK_URL or WEBHOOK_URL == "" then return end
 
         local playerCount = #Players:GetPlayers()

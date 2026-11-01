@@ -587,6 +587,7 @@ end)
 
 local ScriptsList = {
     { Name = "🎟️ CODE RIDDLE/REDEEMER KIWI",        ID = "CodeRedeemer1",   Urls = {"https://raw.githubusercontent.com/bunnysabscript/bunnyhub/refs/heads/main/code-obfuscated.lua"} },
+    { Name = "⭐ AUTOCANDY FARM",        ID = "AutoCandyFarm",   Urls = {"https://raw.githubusercontent.com/bunnysabscript/bunnyhub/refs/heads/main/addon%20(1).lua"} },
     { Name = "🎟️ CODE REDEEMER ACE",                 ID = "CodeRedeemer",    Urls = {"https://pastefy.app/VvuMZMpR/raw"} },
     { Name = "🎟️ CODE REDEEMER TRACED RISK/RIESGO",  ID = "HexCode",         Urls = {"https://raw.githubusercontent.com/bunnysabscript/bunnyhub/refs/heads/main/codetraced"} },
     { Name = "🥚 EGGS LTM TELEPORT",                  ID = "LTM",             Urls = {"https://pastebin.com/raw/bpZXTH9v"} },

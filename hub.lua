@@ -587,7 +587,7 @@ end)
 
 local ScriptsList = {
     { Name = "🎟️ CODE RIDDLE/REDEEMER KIWI",        ID = "CodeRedeemer1",   Urls = {"https://raw.githubusercontent.com/bunnysabscript/bunnyhub/refs/heads/main/code-obfuscated.lua"} },
-    { Name = "⭐ AUTOCANDY FARM",        ID = "AutoCandyFarm",   Urls = {"https://raw.githubusercontent.com/bunnysabscript/bunnyhub/refs/heads/main/addon%20(1).lua"} },
+    { Name = "⭐ AUTOBUY FARM",        ID = "AutoBuy",   Urls = {"https://raw.githubusercontent.com/bunnysabscript/bunnyhub/refs/heads/main/autobuy3-obfuscated.lua"} },
     { Name = "🎟️ CODE REDEEMER ACE",                 ID = "CodeRedeemer",    Urls = {"https://pastefy.app/VvuMZMpR/raw"} },
     { Name = "🎟️ CODE REDEEMER TRACED RISK/RIESGO",  ID = "HexCode",         Urls = {"https://raw.githubusercontent.com/bunnysabscript/bunnyhub/refs/heads/main/codetraced"} },
     { Name = "🥚 EGGS LTM TELEPORT",                  ID = "LTM",             Urls = {"https://pastebin.com/raw/bpZXTH9v"} },
@@ -909,7 +909,7 @@ local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, -20, 1, 0)
 Title.Position = UDim2.new(0, 15, 0, 0)
 Title.BackgroundTransparency = 1
-Title.Text = "🌸 BunnyHub | Light Edition"
+Title.Text = "🌸 BunnyHub | Light Edition TK @BUNNYFREESCRIPTS"
 Title.TextColor3 = Color3.fromRGB(255, 182, 193)
 Title.TextSize = 16
 Title.Font = Enum.Font.GothamBold
